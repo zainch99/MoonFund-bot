@@ -5,6 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MoonFund Mini App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- Solana Web3 & QR Code Libraries -->
+    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+    
     <style>
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
@@ -60,13 +64,11 @@
             cursor: pointer;
             width: 100%;
         }
-        
-        /* Modal Popup Styling */
         .modal {
             display: none;
             position: fixed;
             top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.85);
+            background: rgba(0, 0, 0, 0.9);
             justify-content: center;
             align-items: center;
             padding: 20px;
@@ -79,28 +81,20 @@
             padding: 20px;
             text-align: center;
             width: 100%;
-            max-width: 350px;
+            max-width: 320px;
         }
-        .crypto-box {
-            background: rgba(16, 185, 129, 0.1);
-            border: 1px solid #10b981;
-            border-radius: 8px;
-            padding: 12px;
-            margin: 12px 0;
-            font-size: 15px;
-            color: #10b981;
-            font-weight: bold;
-        }
-        .wallet-box {
-            background: #0f172a;
-            border: 1px dashed #38bdf8;
+        #qrcode {
+            background: #fff;
             padding: 10px;
-            word-break: break-all;
-            font-size: 12px;
-            color: #38bdf8;
-            border-radius: 6px;
+            border-radius: 8px;
+            display: inline-block;
             margin: 10px 0;
-            font-family: monospace;
+        }
+        .status-box {
+            font-size: 13px;
+            color: #fbbf24;
+            margin-top: 10px;
+            font-weight: 600;
         }
         .close-btn {
             background: #ef4444;
@@ -108,7 +102,7 @@
             border: none;
             padding: 8px 16px;
             border-radius: 6px;
-            margin-top: 10px;
+            margin-top: 12px;
             cursor: pointer;
             font-weight: bold;
         }
@@ -160,23 +154,18 @@
         <button class="btn" onclick="openPayment('Whale Fund', 85)">Buy $10,000 Challenge</button>
     </div>
 
-    <!-- Payment Popup Modal -->
+    <!-- Solana Pay Modal -->
     <div class="modal" id="paymentModal">
         <div class="modal-content">
-            <h3 style="margin-top:0; color:#38bdf8;" id="modalTitle">Complete Payment</h3>
+            <h3 style="margin-top:0; color:#38bdf8;" id="modalTitle">Scan to Pay</h3>
+            <p style="font-size:12px; color:#cbd5e1; margin-bottom: 5px;">Scan with Phantom / Solflare or tap QR code:</p>
             
-            <!-- Live Calculated Amount Section -->
-            <div class="crypto-box" id="calcBox">
-                Calculating Live Crypto Price...
-            </div>
+            <a id="solanaPayLink" href="#">
+                <div id="qrcode"></div>
+            </a>
 
-            <p style="font-size:12px; color:#94a3b8; margin: 4px 0;">Send exact amount in SOL or USDC to this address:</p>
-            
-            <div class="wallet-box" id="walletAddress">YOUR_SOLANA_WALLET_ADDRESS_HERE</div>
-            
-            <button class="btn" onclick="copyWallet()">📋 Copy Address</button>
-            <br>
-            <button class="close-btn" onclick="closePayment()">Close</button>
+            <div class="status-box" id="statusBox">⏳ Waiting for payment...</div>
+            <button class="close-btn" onclick="closePayment()">Cancel</button>
         </div>
     </div>
 
@@ -184,20 +173,21 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        const MY_SOLANA_WALLET = "YOUR_SOLANA_WALLET_ADDRESS_HERE"; 
+        // Put your wallet address here
+        const RECEIVER_WALLET = "YOUR_SOLANA_WALLET_ADDRESS_HERE"; 
         let solPriceUsd = 0;
+        let checkInterval = null;
 
-        // Fetch Live SOL Price from CoinGecko API
         async function fetchSolPrice() {
             try {
                 const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
                 const data = await res.json();
                 solPriceUsd = data.solana.usd;
             } catch (err) {
-                console.error("Failed to fetch price", err);
+                console.error("Price error", err);
             }
         }
-        fetchSolPrice(); // Init fetch
+        fetchSolPrice();
 
         const user = tg.initDataUnsafe?.user;
         if (user) {
@@ -207,30 +197,61 @@
         }
 
         async function openPayment(name, usdPrice) {
-            document.getElementById('modalTitle').innerText = `Pay $${usdPrice} for ${name}`;
-            document.getElementById('walletAddress').innerText = MY_SOLANA_WALLET;
-            document.getElementById('paymentModal').style.display = 'flex';
-
-            const calcBox = document.getElementById('calcBox');
-            calcBox.innerText = "Fetching live SOL rate...";
-
             if (!solPriceUsd) await fetchSolPrice();
+            
+            const solAmount = solPriceUsd > 0 ? (usdPrice / solPriceUsd).toFixed(4) : "0.1";
+            document.getElementById('modalTitle').innerText = `Pay ${solAmount} SOL`;
+            
+            // Generate Random Reference Key for Tracking
+            const reference = solanaWeb3.Keypair.generate().publicKey;
 
-            if (solPriceUsd > 0) {
-                const exactSol = (usdPrice / solPriceUsd).toFixed(4);
-                calcBox.innerHTML = `Send <b>${exactSol} SOL</b> <br><small style="font-size:12px; color:#cbd5e1;">(or <b>${usdPrice} USDC</b>)</small>`;
-            } else {
-                calcBox.innerHTML = `Send <b>$${usdPrice} USDC</b> or equivalent SOL`;
-            }
+            // Solana Pay Universal Link Format
+            const solanaPayUrl = `solana:${RECEIVER_WALLET}?amount=${solAmount}&reference=${reference.toBase58()}&label=MoonFund%20Evaluation`;
+
+            // Clear old QR and Draw New QR Code
+            document.getElementById("qrcode").innerHTML = "";
+            new QRCode(document.getElementById("qrcode"), {
+                text: solanaPayUrl,
+                width: 180,
+                height: 180
+            });
+
+            document.getElementById("solanaPayLink").href = solanaPayUrl;
+            document.getElementById('paymentModal').style.display = 'flex';
+            document.getElementById('statusBox').innerText = "⏳ Waiting for payment on Solana...";
+            document.getElementById('statusBox').style.color = "#fbbf24";
+
+            // Start Auto-Listening for Transaction
+            startPaymentListener(reference);
+        }
+
+        function startPaymentListener(reference) {
+            const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
+            
+            if(checkInterval) clearInterval(checkInterval);
+
+            checkInterval = setInterval(async () => {
+                try {
+                    const signatures = await connection.getSignaturesForAddress(reference, { limit: 1 });
+                    if (signatures.length > 0) {
+                        clearInterval(checkInterval);
+                        document.getElementById('statusBox').innerText = "✅ Payment Received! Unlocking...";
+                        document.getElementById('statusBox').style.color = "#10b981";
+                        
+                        setTimeout(() => {
+                            alert("Payment Successful! Your Evaluation Account is Activated.");
+                            closePayment();
+                        }, 2000);
+                    }
+                } catch (e) {
+                    console.log("Checking tx...", e);
+                }
+            }, 3000); // Check every 3 seconds
         }
 
         function closePayment() {
+            if(checkInterval) clearInterval(checkInterval);
             document.getElementById('paymentModal').style.display = 'none';
-        }
-
-        function copyWallet() {
-            navigator.clipboard.writeText(MY_SOLANA_WALLET);
-            alert("Wallet address copied to clipboard!");
         }
     </script>
 </body>

@@ -1,65 +1,45 @@
 import os
+import json
 import logging
-from telegram import Update, InlineKeyboardButton, InlineKeyboardMarkup, WebAppInfo
-from telegram.ext import ApplicationBuilder, CommandHandler, ContextTypes
-from supabase import create_client, Client
+from telegram import Update
+from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
 
 # Logging setup
-logging.basicConfig(
-    format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
-    level=logging.INFO
-)
+logging.basicConfig(format='%(asctime)s - %(name)s - %(levelname)s - %(message)s', level=logging.INFO)
 
-# Environment variables
-TELEGRAM_BOT_TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
-SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_KEY = os.getenv("SUPABASE_KEY")
-
-# Initialize Supabase Client
-supabase: Client = create_client(SUPABASE_URL, SUPABASE_KEY)
+# Environment Variables
+TOKEN = os.getenv("TELEGRAM_BOT_TOKEN")
 
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user = update.effective_user
-    telegram_id = user.id
-    username = user.username or ""
-    first_name = user.first_name or ""
+    await update.message.reply_text("🚀 Welcome to MoonFund Bot! Tap 'Open App' below to view evaluation packages.")
 
+async def handle_webapp_data(update: Update, context: ContextTypes.DEFAULT_TYPE):
     try:
-        # Check if user exists in Supabase, if not insert
-        res = supabase.table("users").upsert({
-            "telegram_id": telegram_id,
-            "username": username,
-            "first_name": first_name
-        }).execute()
+        data = json.loads(update.effective_message.web_app_data.data)
         
+        if data.get("action") == "buy_package":
+            pkg = data.get("package_name")
+            fee = data.get("fee_usd")
+            
+            text = (
+                f"🎯 **Selected Package:** {pkg}\n"
+                f"💵 **Evaluation Fee:** ${fee} USD\n\n"
+                f"To activate your account, send payment via SOL / USDC to your personal deposit address.\n\n"
+                f"⚠️ *Trading dashboard access will unlock automatically after payment confirmation.*"
+            )
+            await update.effective_message.reply_text(text, parse_mode="Markdown")
     except Exception as e:
-        logging.error(f"Database error: {e}")
+        logging.error(f"Error handling webapp data: {e}")
 
-    # WebApp URL placeholder (we will update this when frontend is deployed)
-    web_app_url = "https://example.com" 
-
-    keyboard = [
-        [InlineKeyboardButton("🚀 Launch Trading App", web_app=WebAppInfo(url=web_app_url))]
-    ]
-    reply_markup = InlineKeyboardMarkup(keyboard)
-
-    await update.message.reply_text(
-        f"Welcome **{first_name}** to MoonFund Evaluation App! 📈\n\n"
-        "Click below to open your evaluation account dashboard and start trading.",
-        reply_markup=reply_markup,
-        parse_mode="Markdown"
-    )
-
-def main():
-    if not TELEGRAM_BOT_TOKEN:
-        print("Error: TELEGRAM_BOT_TOKEN is missing!")
-        return
-
-    app = ApplicationBuilder().token(TELEGRAM_BOT_TOKEN).build()
+if __name__ == "__main__":
+    if not TOKEN:
+        print("TELEGRAM_BOT_TOKEN missing!")
+        exit(1)
+        
+    app = ApplicationBuilder().token(TOKEN).build()
+    
     app.add_handler(CommandHandler("start", start))
+    app.add_handler(MessageHandler(filters.StatusUpdate.WEB_APP_DATA, handle_webapp_data))
     
     print("Bot is running...")
     app.run_polling()
-
-if __name__ == "__main__":
-    main()

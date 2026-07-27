@@ -173,8 +173,8 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Put your wallet address here
-        const RECEIVER_WALLET = "YOUR_SOLANA_WALLET_ADDRESS_HERE"; 
+        // Phantom Wallet Address
+        const RECEIVER_WALLET = "5QykrTKfemyAPu5FgX6YubF6XnFH2mHJFg1othqvrXs2"; 
         let solPriceUsd = 0;
         let checkInterval = null;
 
@@ -205,7 +205,7 @@
             // Generate Random Reference Key for Tracking
             const reference = solanaWeb3.Keypair.generate().publicKey;
 
-            // Solana Pay Universal Link Format
+            // Solana Pay Link
             const solanaPayUrl = `solana:${RECEIVER_WALLET}?amount=${solAmount}&reference=${reference.toBase58()}&label=MoonFund%20Evaluation`;
 
             // Clear old QR and Draw New QR Code
@@ -246,7 +246,7 @@
                 } catch (e) {
                     console.log("Checking tx...", e);
                 }
-            }, 3000); // Check every 3 seconds
+            }, 3000);
         }
 
         function closePayment() {

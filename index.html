@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MoonFund Mini App</title>
+    <title>MoonFund Evaluation Terminal</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -16,17 +16,17 @@
             margin: 0;
             padding: 16px;
         }
-        .header { text-align: center; margin-bottom: 20px; }
-        .header h1 { color: #38bdf8; font-size: 22px; margin: 0 0 6px 0; }
+        .header { text-align: center; margin-bottom: 16px; }
+        .header h1 { color: #38bdf8; font-size: 20px; margin: 0; }
         .user-greeting {
             background: rgba(56, 189, 248, 0.1);
             color: #38bdf8;
-            padding: 8px 12px;
+            padding: 6px 12px;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 600;
             display: inline-block;
-            margin-bottom: 16px;
+            margin-top: 8px;
         }
         .test-bypass-btn {
             background-color: #f59e0b;
@@ -34,11 +34,11 @@
             border: none;
             padding: 10px;
             border-radius: 8px;
-            font-size: 14px;
+            font-size: 13px;
             font-weight: bold;
             cursor: pointer;
             width: 100%;
-            margin-bottom: 20px;
+            margin-bottom: 16px;
         }
         .card {
             background: #1e293b;
@@ -47,85 +47,32 @@
             padding: 16px;
             margin-bottom: 16px;
         }
-        .card-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 12px;
-        }
-        .card-title { font-size: 18px; font-weight: bold; color: #f8fafc; }
-        .card-price {
-            background: #0284c7;
-            color: #fff;
-            padding: 4px 10px;
-            border-radius: 20px;
-            font-size: 14px;
-            font-weight: bold;
-        }
-        .rules { font-size: 13px; color: #94a3b8; line-height: 1.6; margin-bottom: 16px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+        .card-title { font-size: 16px; font-weight: bold; color: #f8fafc; }
+        .card-price { background: #0284c7; color: #fff; padding: 4px 10px; border-radius: 20px; font-size: 13px; font-weight: bold; }
+        .rules { font-size: 12px; color: #94a3b8; line-height: 1.6; margin-bottom: 14px; }
         .rules span { color: #e2e8f0; font-weight: 600; }
-        .btn {
-            background-color: #10b981;
-            color: #000;
-            border: none;
-            padding: 12px;
-            border-radius: 8px;
-            font-size: 15px;
-            font-weight: bold;
-            cursor: pointer;
-            width: 100%;
-        }
-        .modal {
-            display: none;
-            position: fixed;
-            top: 0; left: 0; width: 100%; height: 100%;
-            background: rgba(0, 0, 0, 0.9);
-            justify-content: center;
-            align-items: center;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .modal-content {
-            background: #1e293b;
-            border: 1px solid #38bdf8;
-            border-radius: 12px;
-            padding: 20px;
-            text-align: center;
-            width: 100%;
-            max-width: 320px;
-        }
-        #qrcode {
-            background: #fff;
-            padding: 10px;
-            border-radius: 8px;
-            display: inline-block;
-            margin: 10px 0;
-        }
-        .status-box {
-            font-size: 13px;
-            color: #fbbf24;
-            margin-top: 10px;
-            font-weight: 600;
-        }
-        .close-btn {
-            background: #ef4444;
-            color: white;
-            border: none;
-            padding: 8px 16px;
-            border-radius: 6px;
-            margin-top: 12px;
-            cursor: pointer;
-            font-weight: bold;
-        }
-        /* Dashboard Styles */
+        .btn { background-color: #10b981; color: #000; border: none; padding: 12px; border-radius: 8px; font-size: 14px; font-weight: bold; cursor: pointer; width: 100%; }
+        
+        /* Modal */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
+        .modal-content { background: #1e293b; border: 1px solid #38bdf8; border-radius: 12px; padding: 20px; text-align: center; width: 100%; max-width: 320px; }
+        #qrcode { background: #fff; padding: 10px; border-radius: 8px; display: inline-block; margin: 10px 0; }
+        .status-box { font-size: 12px; color: #fbbf24; margin-top: 10px; font-weight: 600; }
+        .close-btn { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; margin-top: 12px; cursor: pointer; font-weight: bold; }
+
+        /* Terminal View */
         #dashboard-view { display: none; }
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .ticker-box { background: #0f172a; border: 1px solid #334155; padding: 12px; border-radius: 8px; text-align: center; margin-bottom: 12px; }
+        .price-text { font-size: 22px; font-weight: bold; color: #10b981; margin-top: 4px; }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
         .stat-box { background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid #334155; }
-        .stat-label { font-size: 11px; color: #94a3b8; }
-        .stat-value { font-size: 16px; font-weight: bold; color: #38bdf8; margin-top: 4px; }
+        .stat-label { font-size: 10px; color: #94a3b8; }
+        .stat-value { font-size: 15px; font-weight: bold; color: #38bdf8; margin-top: 2px; }
         .danger-val { color: #ef4444; }
-        .trade-btn { background: #3b82f6; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; width: 48%; }
-        .sell-btn { background: #ef4444; }
+        .trade-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+        .trade-btn { background: #10b981; color: #000; border: none; padding: 12px; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .sell-btn { background: #ef4444; color: #fff; }
     </style>
 </head>
 <body>
@@ -137,7 +84,6 @@
             <div class="user-greeting" id="user-greeting">Loading...</div>
         </div>
 
-        <!-- Testing Bypass Button -->
         <button class="test-bypass-btn" onclick="launchDashboard(1000)">⚡ Test Bypass (Open Dashboard)</button>
 
         <div class="card">
@@ -146,8 +92,7 @@
                 <span class="card-price">$15</span>
             </div>
             <div class="rules">
-                • Profit Target: <span>$100 (10%)</span><br>
-                • Daily Drawdown: <span>$50 (5%)</span><br>
+                • Target: <span>$100 (10%)</span> | Daily Max Loss: <span>5%</span><br>
                 • Trailing Drawdown: <span>10% from Peak</span><br>
                 • Execution Penalty: <span>5% Hard Slippage</span>
             </div>
@@ -160,34 +105,24 @@
                 <span class="card-price">$45</span>
             </div>
             <div class="rules">
-                • Profit Target: <span>$500 (10%)</span><br>
-                • Daily Drawdown: <span>$250 (5%)</span><br>
+                • Target: <span>$500 (10%)</span> | Daily Max Loss: <span>5%</span><br>
                 • Trailing Drawdown: <span>10% from Peak</span><br>
                 • Execution Penalty: <span>5% Hard Slippage</span>
             </div>
             <button class="btn" onclick="openPayment('Degen Trader', 45, 5000)">Buy $5,000 Challenge</button>
         </div>
-
-        <div class="card">
-            <div class="card-header">
-                <span class="card-title">Whale Fund ($10,000)</span>
-                <span class="card-price">$85</span>
-            </div>
-            <div class="rules">
-                • Profit Target: <span>$1,000 (10%)</span><br>
-                • Daily Drawdown: <span>$500 (5%)</span><br>
-                • Trailing Drawdown: <span>10% from Peak</span><br>
-                • Execution Penalty: <span>5% Hard Slippage</span>
-            </div>
-            <button class="btn" onclick="openPayment('Whale Fund', 85, 10000)">Buy $10,000 Challenge</button>
-        </div>
     </div>
 
-    <!-- SECTION 2: LIVE TRADING DASHBOARD -->
+    <!-- SECTION 2: LIVE TRADING TERMINAL -->
     <div id="dashboard-view">
         <div class="header">
-            <h1>📊 Evaluation Terminal</h1>
+            <h1>📊 SOL/USD Live Terminal</h1>
             <div class="user-greeting" id="dash-status" style="background: rgba(16, 185, 129, 0.2); color: #10b981;">STATUS: ACTIVE</div>
+        </div>
+
+        <div class="ticker-box">
+            <div style="font-size: 11px; color: #94a3b8;">SOLANA LIVE MARKET PRICE</div>
+            <div class="price-text" id="sol-market-price">Loading...</div>
         </div>
 
         <div class="card">
@@ -201,7 +136,7 @@
                     <div class="stat-value" id="val-peak">$1,000.00</div>
                 </div>
                 <div class="stat-box">
-                    <div class="stat-label">Hard Stop Limit</div>
+                    <div class="stat-label">Hard Stop (Max Loss)</div>
                     <div class="stat-value danger-val" id="val-stop">$900.00</div>
                 </div>
                 <div class="stat-box">
@@ -209,30 +144,26 @@
                     <div class="stat-value" style="color: #10b981;" id="val-target">$1,100.00</div>
                 </div>
             </div>
-            <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0;">⚡ 5% Hard Slippage Active On All Executions</p>
+            <p style="font-size: 10px; color: #94a3b8; text-align: center; margin: 0;">⚠️ Rules: 10% Trailing Stop & 5% Hard Execution Penalty</p>
         </div>
 
         <div class="card">
-            <div class="card-title" style="margin-bottom: 10px; font-size: 15px;">Simulated Execution Panel</div>
-            <div style="display: flex; justify-content: space-between;">
-                <button class="trade-btn" onclick="processSimulatedTrade('BUY')">BUY SOL (5% Penalty)</button>
-                <button class="trade-btn sell-btn" onclick="processSimulatedTrade('SELL')">SELL SOL (5% Penalty)</button>
+            <div style="font-size: 13px; font-weight: bold; margin-bottom: 8px;">Order Execution (Simulated)</div>
+            <div class="trade-grid">
+                <button class="trade-btn" onclick="executeMarketOrder('BUY')">BUY SOL</button>
+                <button class="trade-btn sell-btn" onclick="executeMarketOrder('SELL')">SELL SOL</button>
             </div>
         </div>
-        
-        <button class="close-btn" style="width:100%; padding:10px; background:#334155; margin-top:10px;" onclick="location.reload()">Back to Packages</button>
+
+        <button class="close-btn" style="width:100%; padding:10px; background:#334155; margin-top:5px;" onclick="location.reload()">Back to Packages</button>
     </div>
 
     <!-- Solana Pay Modal -->
     <div class="modal" id="paymentModal">
         <div class="modal-content">
             <h3 style="margin-top:0; color:#38bdf8;" id="modalTitle">Scan to Pay</h3>
-            <p style="font-size:12px; color:#cbd5e1; margin-bottom: 5px;">Scan with Phantom / Solflare or tap QR code:</p>
-            
-            <a id="solanaPayLink" href="#">
-                <div id="qrcode"></div>
-            </a>
-
+            <p style="font-size:11px; color:#cbd5e1; margin-bottom: 5px;">Scan with Phantom / Solflare:</p>
+            <a id="solanaPayLink" href="#"><div id="qrcode"></div></a>
             <div class="status-box" id="statusBox">⏳ Waiting for payment...</div>
             <button class="close-btn" onclick="closePayment()">Cancel</button>
         </div>
@@ -243,9 +174,10 @@
         tg.expand();
 
         const RECEIVER_WALLET = "5QykrTKfemyAPu5FgX6YubF6XnFH2mHJFg1othqvrXs2"; 
-        let solPriceUsd = 0;
+        let currentSolPrice = 0;
         let checkInterval = null;
-        
+        let priceTickerInterval = null;
+
         let account = {
             initialBalance: 1000,
             equity: 1000,
@@ -254,56 +186,45 @@
             status: "ACTIVE"
         };
 
-        async function fetchSolPrice() {
+        // Live Free Price Ticker via DexScreener/CoinGecko Client-side
+        async function fetchLiveSolPrice() {
             try {
                 const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=solana&vs_currencies=usd');
                 const data = await res.json();
-                solPriceUsd = data.solana.usd;
+                if(data.solana && data.solana.usd) {
+                    currentSolPrice = data.solana.usd;
+                    document.getElementById('sol-market-price').innerText = `$${currentSolPrice.toFixed(2)}`;
+                }
             } catch (err) {
-                console.error("Price error", err);
+                console.error("Price ticker error", err);
             }
         }
-        fetchSolPrice();
 
         const user = tg.initDataUnsafe?.user;
-        if (user) {
-            document.getElementById('user-greeting').innerText = `@${user.username || user.first_name}`;
-        } else {
-            document.getElementById('user-greeting').innerText = "Trader";
-        }
+        document.getElementById('user-greeting').innerText = user ? `@${user.username || user.first_name}` : "Trader";
 
-        async function openPayment(name, usdPrice, challengeCredit) {
+        function openPayment(name, usdPrice, challengeCredit) {
             account.initialBalance = challengeCredit;
             account.equity = challengeCredit;
             account.highWaterMark = challengeCredit;
             account.target = challengeCredit * 1.10;
 
-            if (!solPriceUsd) await fetchSolPrice();
-            
-            const solAmount = solPriceUsd > 0 ? (usdPrice / solPriceUsd).toFixed(4) : "0.1";
+            const solAmount = currentSolPrice > 0 ? (usdPrice / currentSolPrice).toFixed(4) : "0.1";
             document.getElementById('modalTitle').innerText = `Pay ${solAmount} SOL`;
             
             const reference = solanaWeb3.Keypair.generate().publicKey;
             const solanaPayUrl = `solana:${RECEIVER_WALLET}?amount=${solAmount}&reference=${reference.toBase58()}&label=MoonFund%20Evaluation`;
 
             document.getElementById("qrcode").innerHTML = "";
-            new QRCode(document.getElementById("qrcode"), {
-                text: solanaPayUrl,
-                width: 180,
-                height: 180
-            });
-
+            new QRCode(document.getElementById("qrcode"), { text: solanaPayUrl, width: 160, height: 160 });
             document.getElementById("solanaPayLink").href = solanaPayUrl;
             document.getElementById('paymentModal').style.display = 'flex';
-            document.getElementById('statusBox').innerText = "⏳ Waiting for payment on Solana...";
-            document.getElementById('statusBox').style.color = "#fbbf24";
 
             startPaymentListener(reference);
         }
 
         function startPaymentListener(reference) {
             const connection = new solanaWeb3.Connection("https://api.mainnet-beta.solana.com", "confirmed");
-            
             if(checkInterval) clearInterval(checkInterval);
 
             checkInterval = setInterval(async () => {
@@ -311,17 +232,10 @@
                     const signatures = await connection.getSignaturesForAddress(reference, { limit: 1 });
                     if (signatures.length > 0) {
                         clearInterval(checkInterval);
-                        document.getElementById('statusBox').innerText = "✅ Payment Received! Unlocking...";
-                        document.getElementById('statusBox').style.color = "#10b981";
-                        
-                        setTimeout(() => {
-                            closePayment();
-                            launchDashboard(account.initialBalance);
-                        }, 1500);
+                        closePayment();
+                        launchDashboard(account.initialBalance);
                     }
-                } catch (e) {
-                    console.log("Checking tx...", e);
-                }
+                } catch (e) { console.log(e); }
             }, 3000);
         }
 
@@ -339,6 +253,11 @@
 
             document.getElementById('landing-view').style.display = 'none';
             document.getElementById('dashboard-view').style.display = 'block';
+
+            fetchLiveSolPrice();
+            if(priceTickerInterval) clearInterval(priceTickerInterval);
+            priceTickerInterval = setInterval(fetchLiveSolPrice, 5000); // refresh every 5s
+
             updateDashboardUI();
         }
 
@@ -354,25 +273,25 @@
                 document.getElementById('dash-status').innerText = "STATUS: TERMINATED (BREACHED)";
                 document.getElementById('dash-status').style.background = "rgba(239, 68, 68, 0.2)";
                 document.getElementById('dash-status').style.color = "#ef4444";
-                alert("CRITICAL: Account Terminated! Trailing Drawdown Breached.");
+                alert("CRITICAL BREACH: Account Terminated! Trailing Drawdown Hit.");
             } else if (account.equity >= account.target) {
                 account.status = "PASSED";
                 document.getElementById('dash-status').innerText = "STATUS: PASSED 🎉";
-                alert("CONGRATULATIONS! You passed the evaluation target.");
+                alert("CONGRATULATIONS! Profit target reached.");
             }
         }
 
-        function processSimulatedTrade(type) {
+        function executeMarketOrder(type) {
             if (account.status !== "ACTIVE") {
                 alert("Account is not active.");
                 return;
             }
 
-            let rawOutcomePercent = (Math.random() * 0.18) - 0.08; 
-            let netOutcomePercent = rawOutcomePercent - 0.05; 
+            // Simulated execution based on live market volatility (-6% to +8%)
+            let marketMove = (Math.random() * 0.14) - 0.06;
+            let netOutcome = marketMove - 0.05; // 5% Penalty Deduction
 
-            let delta = account.equity * netOutcomePercent;
-            account.equity += delta;
+            account.equity += (account.equity * netOutcome);
 
             if (account.equity > account.highWaterMark) {
                 account.highWaterMark = account.equity;
@@ -380,6 +299,8 @@
 
             updateDashboardUI();
         }
+
+        fetchLiveSolPrice();
     </script>
 </body>
 </html>

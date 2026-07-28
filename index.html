@@ -14,19 +14,19 @@
             background-color: #0b0f19;
             color: #f8fafc;
             margin: 0;
-            padding: 12px;
+            padding: 6px;
         }
-        .header { text-align: center; margin-bottom: 10px; }
+        .header { text-align: center; margin-bottom: 6px; }
         .header h1 { color: #38bdf8; font-size: 16px; margin: 0; }
         .user-greeting {
             background: rgba(56, 189, 248, 0.1);
             color: #38bdf8;
-            padding: 4px 10px;
+            padding: 2px 8px;
             border-radius: 6px;
             font-size: 11px;
             font-weight: 600;
             display: inline-block;
-            margin-top: 4px;
+            margin-top: 2px;
         }
         .test-bypass-btn {
             background-color: #f59e0b;
@@ -43,9 +43,9 @@
         .card {
             background: #151c2c;
             border: 1px solid #243049;
-            border-radius: 10px;
-            padding: 10px;
-            margin-bottom: 10px;
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 8px;
         }
         .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
         .card-title { font-size: 14px; font-weight: bold; color: #f8fafc; }
@@ -54,26 +54,37 @@
         .rules span { color: #e2e8f0; font-weight: 600; }
         .btn { background-color: #10b981; color: #000; border: none; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; width: 100%; }
 
-        /* DEX Live Feed & Chart Container */
+        /* COMPACT LIVE STATS HEADER */
+        .compact-stats-bar {
+            background: #151c2c;
+            border: 1px solid #243049;
+            border-radius: 6px;
+            padding: 6px 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            margin-bottom: 6px;
+        }
+        .stat-item { display: flex; flex-direction: column; text-align: center; }
+        .stat-lbl { font-size: 9px; color: #94a3b8; text-transform: uppercase; }
+        .stat-val { font-weight: bold; color: #38bdf8; font-size: 12px; margin-top: 1px; }
+
+        /* FULL SCREEN DEX WIDGET CONTAINER */
         .dex-frame-container {
             width: 100%;
-            height: 280px;
+            height: calc(100vh - 130px);
+            min-height: 480px;
             background: #000;
             border-radius: 8px;
             overflow: hidden;
             border: 1px solid #243049;
-            margin-bottom: 10px;
+            margin-bottom: 6px;
         }
         iframe { width: 100%; height: 100%; border: none; }
 
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px; }
-        .stat-box { background: #0b0f19; padding: 8px; border-radius: 6px; border: 1px solid #243049; }
-        .stat-label { font-size: 10px; color: #94a3b8; }
-        .stat-value { font-size: 13px; font-weight: bold; color: #38bdf8; margin-top: 2px; }
-        .danger-val { color: #ef4444; }
-
-        .trade-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .trade-btn { background: #10b981; color: #000; border: none; padding: 12px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .trade-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+        .trade-btn { background: #10b981; color: #000; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; }
         .sell-btn { background: #ef4444; color: #fff; }
 
         /* Modal */
@@ -92,7 +103,7 @@
             <div class="user-greeting" id="user-greeting">Loading...</div>
         </div>
 
-        <button class="test-bypass-btn" onclick="launchDashboard(1000)">⚡ Test Bypass (Open Live Feed)</button>
+        <button class="test-bypass-btn" onclick="launchDashboard(1000)">⚡ Test Bypass (Open Full Terminal)</button>
 
         <div class="card">
             <div class="card-header">
@@ -107,50 +118,40 @@
         </div>
     </div>
 
-    <!-- SECTION 2: LIVE NEW LAUNCHES TERMINAL -->
+    <!-- SECTION 2: FULL DEX SCREENER TERMINAL -->
     <div id="dashboard-view" style="display:none;">
-        <div class="header" style="margin-bottom:6px;">
-            <h1 style="font-size:15px;">🔥 Live New Solana Launches</h1>
-            <div class="user-greeting" id="dash-status" style="background: rgba(16, 185, 129, 0.2); color: #10b981;">STATUS: ACTIVE</div>
+        
+        <!-- COMPACT STATUS LINE -->
+        <div class="compact-stats-bar">
+            <div class="stat-item">
+                <span class="stat-lbl">Equity</span>
+                <span class="stat-val" id="val-equity">$1,000.00</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-lbl">High Peak</span>
+                <span class="stat-val" id="val-peak" style="color: #cbd5e1;">$1,000.00</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-lbl">Hard Stop</span>
+                <span class="stat-val" id="val-stop" style="color: #ef4444;">$900.00</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-lbl">Target</span>
+                <span class="stat-val" id="val-target" style="color: #10b981;">$1,100.00</span>
+            </div>
         </div>
 
-        <!-- DEXSCREENER EMBEDDED LIVE FEED/CHART WIDGET -->
+        <!-- DEXSCREENER FULL CONTAINER -->
         <div class="dex-frame-container">
             <iframe src="https://dexscreener.com/solana?embed=1&theme=dark&trades=0&info=0"></iframe>
         </div>
 
-        <!-- EVALUATION ACCOUNT STATS -->
-        <div class="card">
-            <div class="stat-grid">
-                <div class="stat-box">
-                    <div class="stat-label">Virtual Equity</div>
-                    <div class="stat-value" id="val-equity">$1,000.00</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">High-Water Mark</div>
-                    <div class="stat-value" id="val-peak">$1,000.00</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">Hard Stop Limit</div>
-                    <div class="stat-value danger-val" id="val-stop">$900.00</div>
-                </div>
-                <div class="stat-box">
-                    <div class="stat-label">Profit Target</div>
-                    <div class="stat-value" style="color: #10b981;" id="val-target">$1,100.00</div>
-                </div>
-            </div>
-            <p style="font-size: 9px; color: #94a3b8; text-align: center; margin: 0;">Trading Live Pump/Dex Screener Coins using Evaluation Credit</p>
+        <!-- ACTION BUTTONS -->
+        <div class="trade-grid">
+            <button class="trade-btn" onclick="executeTrade('BUY')">BUY (5% Penalty)</button>
+            <button class="trade-btn sell-btn" onclick="executeTrade('SELL')">SELL (5% Penalty)</button>
         </div>
 
-        <!-- EXECUTION BUTTONS -->
-        <div class="card" style="margin-bottom:8px;">
-            <div class="trade-grid">
-                <button class="trade-btn" onclick="executeTrade('BUY')">BUY (5% Slippage)</button>
-                <button class="trade-btn sell-btn" onclick="executeTrade('SELL')">SELL (5% Slippage)</button>
-            </div>
-        </div>
-
-        <button class="close-btn" style="width:100%; background:#243049; padding:8px;" onclick="location.reload()">Back to Packages</button>
     </div>
 
     <!-- Solana Pay Modal -->
@@ -193,13 +194,9 @@
 
             if (account.equity <= stopLimit) {
                 account.status = "TERMINATED";
-                document.getElementById('dash-status').innerText = "STATUS: TERMINATED (BREACHED)";
-                document.getElementById('dash-status').style.background = "rgba(239, 68, 68, 0.2)";
-                document.getElementById('dash-status').style.color = "#ef4444";
                 alert("CRITICAL BREACH: Trailing Drawdown Limit Hit! Account Terminated.");
             } else if (account.equity >= account.target) {
                 account.status = "PASSED";
-                document.getElementById('dash-status').innerText = "STATUS: PASSED 🎉";
                 alert("CONGRATULATIONS! Profit Target Reached.");
             }
         }
@@ -210,7 +207,6 @@
                 return;
             }
 
-            // High volatility meme coin simulation (-12% to +15%) with 5% execution fee
             let marketMove = (Math.random() * 0.27) - 0.12;
             let netOutcome = marketMove - 0.05;
 

@@ -70,7 +70,7 @@
         .stat-lbl { font-size: 9px; color: #94a3b8; text-transform: uppercase; }
         .stat-val { font-weight: bold; color: #38bdf8; font-size: 12px; margin-top: 1px; }
 
-        /* FULL SCREEN DEX WIDGET CONTAINER */
+        /* DEX CONTAINER WITH BOTTOM BRANDING CROP HIDE */
         .dex-frame-container {
             width: 100%;
             height: calc(100vh - 130px);
@@ -80,8 +80,15 @@
             overflow: hidden;
             border: 1px solid #243049;
             margin-bottom: 6px;
+            position: relative;
         }
-        iframe { width: 100%; height: 100%; border: none; }
+        /* Crop out bottom dexscreener footer strip */
+        iframe {
+            width: 100%;
+            height: calc(100% + 38px);
+            border: none;
+            margin-top: 0px;
+        }
 
         .trade-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
         .trade-btn { background: #10b981; color: #000; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; }
@@ -96,7 +103,6 @@
 </head>
 <body>
 
-    <!-- SECTION 1: PACKAGES LANDING -->
     <div id="landing-view">
         <div class="header">
             <h1>🚀 MoonFund Evaluation</h1>
@@ -118,10 +124,8 @@
         </div>
     </div>
 
-    <!-- SECTION 2: FULL DEX SCREENER TERMINAL -->
     <div id="dashboard-view" style="display:none;">
         
-        <!-- COMPACT STATUS LINE -->
         <div class="compact-stats-bar">
             <div class="stat-item">
                 <span class="stat-lbl">Equity</span>
@@ -141,12 +145,10 @@
             </div>
         </div>
 
-        <!-- DEXSCREENER FULL CONTAINER -->
         <div class="dex-frame-container">
             <iframe src="https://dexscreener.com/solana?embed=1&theme=dark&trades=0&info=0"></iframe>
         </div>
 
-        <!-- ACTION BUTTONS -->
         <div class="trade-grid">
             <button class="trade-btn" onclick="executeTrade('BUY')">BUY (5% Penalty)</button>
             <button class="trade-btn sell-btn" onclick="executeTrade('SELL')">SELL (5% Penalty)</button>
@@ -154,7 +156,6 @@
 
     </div>
 
-    <!-- Solana Pay Modal -->
     <div class="modal" id="paymentModal">
         <div class="modal-content">
             <h3 style="margin-top:0; color:#38bdf8;" id="modalTitle">Scan to Pay</h3>
@@ -168,12 +169,29 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
+        let currentScreen = 'landing';
         let account = { initialBalance: 1000, equity: 1000, highWaterMark: 1000, target: 1100, status: "ACTIVE" };
 
         const user = tg.initDataUnsafe?.user;
         document.getElementById('user-greeting').innerText = user ? `@${user.username || user.first_name}` : "Trader";
 
+        // TELEGRAM BACK BUTTON INTEGRATION
+        tg.BackButton.onClick(() => {
+            if (currentScreen === 'dashboard' || currentScreen === 'payment') {
+                showLanding();
+            }
+        });
+
+        function showLanding() {
+            currentScreen = 'landing';
+            document.getElementById('dashboard-view').style.display = 'none';
+            document.getElementById('paymentModal').style.display = 'none';
+            document.getElementById('landing-view').style.display = 'block';
+            tg.BackButton.hide();
+        }
+
         function launchDashboard(creditAmount) {
+            currentScreen = 'dashboard';
             account.initialBalance = creditAmount;
             account.equity = creditAmount;
             account.highWaterMark = creditAmount;
@@ -182,8 +200,20 @@
 
             document.getElementById('landing-view').style.display = 'none';
             document.getElementById('dashboard-view').style.display = 'block';
+            
+            // Push browser history state for hardware Back Button
+            window.history.pushState({ page: 'dashboard' }, 'Dashboard');
+            tg.BackButton.show();
+            
             updateDashboardUI();
         }
+
+        // Handle Browser/Device Back Button Push
+        window.onpopstate = function(event) {
+            if (currentScreen !== 'landing') {
+                showLanding();
+            }
+        };
 
         function updateDashboardUI() {
             const stopLimit = account.highWaterMark * 0.90;
@@ -219,7 +249,7 @@
             updateDashboardUI();
         }
 
-        function closePayment() { document.getElementById('paymentModal').style.display = 'none'; }
+        function closePayment() { showLanding(); }
     </script>
 </body>
 </html>

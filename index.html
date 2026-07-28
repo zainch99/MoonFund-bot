@@ -54,7 +54,7 @@
         .rules span { color: #e2e8f0; font-weight: 600; }
         .btn { background-color: #10b981; color: #000; border: none; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; width: 100%; }
 
-        /* COMPACT LIVE STATS HEADER WITH RESET BUTTON */
+        /* COMPACT LIVE STATS HEADER */
         .compact-stats-bar {
             background: #151c2c;
             border: 1px solid #243049;
@@ -121,8 +121,8 @@
                 <span class="card-price">$15</span>
             </div>
             <div class="rules">
-                • Target: <span>$100 (10%)</span> | Max Loss: <span>5%</span><br>
-                • Trailing Stop: <span>10% from Peak</span> | Penalty: <span>5% Slippage</span>
+                • Target: <span>$100 (10%)</span> | Max Loss: <span>5% ($950 Stop)</span><br>
+                • Penalty: <span>1% Slippage per trade</span>
             </div>
             <button class="btn" onclick="launchDashboard(1000)">Buy $1,000 Challenge</button>
         </div>
@@ -139,7 +139,7 @@
             </div>
             <div class="stat-item">
                 <span class="stat-lbl">Hard Stop</span>
-                <span class="stat-val" id="val-stop" style="color: #ef4444;">$900.00</span>
+                <span class="stat-val" id="val-stop" style="color: #ef4444;">$950.00</span>
             </div>
             <div class="stat-item">
                 <span class="stat-lbl">Target</span>
@@ -152,8 +152,8 @@
         </div>
 
         <div class="trade-grid">
-            <button class="trade-btn" onclick="executeTrade('BUY')">BUY (5% Fee)</button>
-            <button class="trade-btn sell-btn" onclick="executeTrade('SELL')">SELL (5% Fee)</button>
+            <button class="trade-btn" onclick="executeTrade('BUY')">BUY (Simulate)</button>
+            <button class="trade-btn sell-btn" onclick="executeTrade('SELL')">SELL (Simulate)</button>
         </div>
     </div>
 
@@ -161,27 +161,20 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        let account = { initialBalance: 1000, equity: 1000, highWaterMark: 1000, target: 1100, status: "ACTIVE" };
+        let account = { initialBalance: 1000, equity: 1000, highWaterMark: 1000, target: 1100, hardStop: 950, status: "ACTIVE" };
 
         const user = tg.initDataUnsafe?.user;
         document.getElementById('user-greeting').innerText = user ? `@${user.username || user.first_name}` : "Trader";
 
-        // HARDWARE BACK BUTTON OVERRIDE LOGIC
         function setupBackButtonOverride() {
             window.history.pushState({ page: 'terminal' }, '', '');
-            
-            window.onpopstate = function (event) {
-                // Prevent app closure, reset chart to main tokens list instead
+            window.onpopstate = function () {
                 resetDexList();
-                // Push state again so next back button press is captured as well
                 window.history.pushState({ page: 'terminal' }, '', '');
             };
 
-            // Telegram UI BackButton Handler
             tg.BackButton.show();
-            tg.BackButton.onClick(() => {
-                resetDexList();
-            });
+            tg.BackButton.onClick(() => { resetDexList(); });
         }
 
         window.onload = function() {
@@ -201,6 +194,7 @@
             account.equity = creditAmount;
             account.highWaterMark = creditAmount;
             account.target = creditAmount * 1.10;
+            account.hardStop = creditAmount * 0.95; // Exact 5% Max Drawdown ($950)
             account.status = "ACTIVE";
 
             localStorage.setItem('moonfund_active_session', JSON.stringify(account));
@@ -210,40 +204,37 @@
         function showDashboardUI() {
             document.getElementById('landing-view').style.display = 'none';
             document.getElementById('dashboard-view').style.display = 'block';
-            
             setupBackButtonOverride();
             updateDashboardUI();
         }
 
         function updateDashboardUI() {
-            const stopLimit = account.highWaterMark * 0.90;
             document.getElementById('val-equity').innerText = `$${account.equity.toFixed(2)}`;
-            document.getElementById('val-stop').innerText = `$${stopLimit.toFixed(2)}`;
+            document.getElementById('val-stop').innerText = `$${account.hardStop.toFixed(2)}`;
             document.getElementById('val-target').innerText = `$${account.target.toFixed(2)}`;
 
             localStorage.setItem('moonfund_active_session', JSON.stringify(account));
 
-            if (account.equity <= stopLimit) {
+            // Hard Stop check (below $950)
+            if (account.equity <= account.hardStop) {
                 account.status = "TERMINATED";
-                alert("CRITICAL BREACH: Trailing Drawdown Hit! Account Terminated.");
+                alert("CRITICAL BREACH: 5% Max Loss Hit ($950)! Account Terminated.");
                 localStorage.removeItem('moonfund_active_session');
-                location.reload();
+                location.reload(); // Returns back to packages page on breach
             } else if (account.equity >= account.target) {
                 account.status = "PASSED";
-                alert("CONGRATULATIONS! Target Passed.");
+                alert("CONGRATULATIONS! Target Reached ($1,100). Evaluation Passed!");
             }
         }
 
         function executeTrade(type) {
-            if (account.status !== "ACTIVE") {
-                alert("Account is not active.");
-                return;
-            }
+            if (account.status !== "ACTIVE") return;
 
-            let marketMove = (Math.random() * 0.27) - 0.12;
-            let netOutcome = marketMove - 0.05;
+            // Controlled Simulation: -2% to +4% return per click
+            let percentageOutcome = (Math.random() * 0.06) - 0.02; // Controlled outcome
+            let changeAmount = account.equity * percentageOutcome;
 
-            account.equity += (account.equity * netOutcome);
+            account.equity += changeAmount;
 
             if (account.equity > account.highWaterMark) {
                 account.highWaterMark = account.equity;

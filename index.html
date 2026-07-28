@@ -7,7 +7,7 @@
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     
     <style>
-        * { box-sizing: border-box; touch-action: manipulation; }
+        * { box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: #0b0f19;
@@ -86,7 +86,7 @@
             text-align: center;
             font-size: 11px;
             font-weight: bold;
-            padding: 5px;
+            padding: 6px;
             border-radius: 4px;
             margin-bottom: 6px;
             background: #1e293b;
@@ -96,15 +96,14 @@
         /* DEX CONTAINER */
         .dex-frame-container {
             width: 100%;
-            height: calc(100vh - 160px);
-            min-height: 400px;
+            height: calc(100vh - 165px);
+            min-height: 380px;
             background: #000;
             border-radius: 8px;
             overflow: hidden;
             border: 1px solid #243049;
             margin-bottom: 6px;
             position: relative;
-            z-index: 1;
         }
         iframe {
             width: 100%;
@@ -112,15 +111,10 @@
             border: none;
         }
 
-        /* HARD OVERLAY FIXED BUTTONS (HIJACK PROTECTION) */
         .trade-grid { 
             display: grid; 
             grid-template-columns: 1fr 1fr; 
             gap: 6px; 
-            position: relative;
-            z-index: 99999;
-            background: #0b0f19;
-            padding-top: 2px;
         }
         .action-btn { 
             border: none; 
@@ -130,12 +124,10 @@
             cursor: pointer; 
             font-size: 14px; 
             width: 100%;
-            display: block;
-            pointer-events: auto !important;
         }
         .buy-style { background: #10b981; color: #000; }
         .sell-style { background: #ef4444; color: #fff; }
-        .action-btn:active { opacity: 0.5; transform: scale(0.98); }
+        .reset-btn { background: #f59e0b; color: #000; margin-top: 6px; display: none; }
     </style>
 </head>
 <body>
@@ -147,7 +139,7 @@
             <div class="user-greeting" id="user-greeting">Trader</div>
         </div>
 
-        <button class="test-bypass-btn" id="btn-bypass">⚡ Test Bypass (Activate Terminal)</button>
+        <button class="test-bypass-btn" onclick="launchDashboard(1000)">⚡ Test Bypass (Activate Terminal)</button>
 
         <div class="card">
             <div class="card-header">
@@ -156,9 +148,9 @@
             </div>
             <div class="rules">
                 • Target: <span>$100 (10%)</span> | Max Loss: <span>5% ($950 Stop)</span><br>
-                • Engine: <span>Direct Hardware Touch Binding</span>
+                • Rules: <span>Interactive Trading Simulator</span>
             </div>
-            <button class="btn" id="btn-challenge">Buy $1,000 Challenge</button>
+            <button class="btn" onclick="launchDashboard(1000)">Buy $1,000 Challenge</button>
         </div>
     </div>
 
@@ -166,7 +158,7 @@
     <div id="dashboard-view" style="display:none;">
         
         <div class="compact-stats-bar">
-            <button class="reload-chart-btn" id="btn-reset-dex">← Tokens</button>
+            <button class="reload-chart-btn" onclick="resetDexList()">← Tokens</button>
             <div class="stat-item">
                 <span class="stat-lbl">Equity</span>
                 <span class="stat-val" id="val-equity">$1,000.00</span>
@@ -188,40 +180,23 @@
         </div>
 
         <div class="trade-grid">
-            <button class="action-btn buy-style" id="btn-trade-buy">BUY</button>
-            <button class="action-btn sell-style" id="btn-trade-sell">SELL</button>
+            <button class="action-btn buy-style" onclick="processTrade('BUY')">BUY</button>
+            <button class="action-btn sell-style" onclick="processTrade('SELL')">SELL</button>
         </div>
+        <button class="action-btn reset-btn" id="btn-reset-session" onclick="forceResetSession()">🔄 Reset Test Account</button>
     </div>
 
     <script>
-        // Force flush localstorage if corrupted state exists
+        const tg = window.Telegram?.WebApp;
+        if (tg) tg.expand();
+
         let account = { initialBalance: 1000, equity: 1000, target: 1100, hardStop: 950, status: "ACTIVE" };
 
-        function attachEvents() {
-            const bindAction = (id, fn) => {
-                const el = document.getElementById(id);
-                if (!el) return;
-                el.addEventListener('touchstart', (e) => { e.preventDefault(); fn(); }, { passive: false });
-                el.addEventListener('click', (e) => { e.preventDefault(); fn(); });
-            };
-
-            bindAction('btn-bypass', () => launchDashboard(1000));
-            bindAction('btn-challenge', () => launchDashboard(1000));
-            bindAction('btn-reset-dex', resetDexList);
-            bindAction('btn-trade-buy', () => processTrade('BUY'));
-            bindAction('btn-trade-sell', () => processTrade('SELL'));
-        }
-
         window.onload = function() {
-            try {
-                if (window.Telegram && window.Telegram.WebApp) {
-                    window.Telegram.WebApp.expand();
-                    const u = window.Telegram.WebApp.initDataUnsafe?.user;
-                    if (u) document.getElementById('user-greeting').innerText = `@${u.username || u.first_name}`;
-                }
-            } catch(e){}
-
-            attachEvents();
+            if (tg && tg.initDataUnsafe?.user) {
+                const u = tg.initDataUnsafe.user;
+                document.getElementById('user-greeting').innerText = `@${u.username || u.first_name}`;
+            }
 
             const savedSession = localStorage.getItem('moonfund_active_session');
             if (savedSession) {
@@ -229,13 +204,18 @@
                     account = JSON.parse(savedSession);
                     showDashboardUI();
                 } catch(e) {
-                    localStorage.removeItem('moonfund_active_session');
+                    forceResetSession();
                 }
             }
         };
 
         function resetDexList() {
             document.getElementById('dex-iframe').src = "https://dexscreener.com/solana?embed=1&theme=dark&trades=0&info=0";
+        }
+
+        function forceResetSession() {
+            localStorage.removeItem('moonfund_active_session');
+            location.reload();
         }
 
         function launchDashboard(creditAmount) {
@@ -265,9 +245,9 @@
                 window.history.pushState({ page: 'terminal' }, '', '');
             };
 
-            if (window.Telegram && window.Telegram.WebApp && window.Telegram.WebApp.BackButton) {
-                window.Telegram.WebApp.BackButton.show();
-                window.Telegram.WebApp.BackButton.onClick(() => { resetDexList(); });
+            if (tg && tg.BackButton) {
+                tg.BackButton.show();
+                tg.BackButton.onClick(() => { resetDexList(); });
             }
         }
 
@@ -277,10 +257,11 @@
             document.getElementById('val-target').innerText = `$${account.target.toFixed(2)}`;
 
             const banner = document.getElementById('status-banner');
+            const resetBtn = document.getElementById('btn-reset-session');
 
             if (pnl !== null) {
                 const isWin = pnl >= 0;
-                banner.innerText = `${type} EXECUTED: ${isWin ? '+' : ''}$${pnl.toFixed(2)}`;
+                banner.innerText = `${type}: ${isWin ? '+' : ''}$${pnl.toFixed(2)}`;
                 banner.style.color = isWin ? '#10b981' : '#ef4444';
             }
 
@@ -288,24 +269,30 @@
 
             if (account.equity <= account.hardStop) {
                 account.status = "TERMINATED";
-                banner.innerText = "🚨 HARD STOP BREACHED! RESETTING...";
+                banner.innerText = "🚨 MAX LOSS HIT! ACCOUNT TERMINATED.";
                 banner.style.color = "#ef4444";
-                setTimeout(() => {
-                    localStorage.removeItem('moonfund_active_session');
-                    location.reload();
-                }, 1200);
+                resetBtn.style.display = "block";
             } else if (account.equity >= account.target) {
                 account.status = "PASSED";
                 banner.innerText = "🏆 TARGET REACHED! EVALUATION PASSED!";
                 banner.style.color = "#10b981";
+                resetBtn.style.display = "block";
+            } else {
+                resetBtn.style.display = "none";
             }
         }
 
         function processTrade(type) {
-            if (account.status !== "ACTIVE") return;
+            // If passed or terminated, allow auto-reset on trade
+            if (account.status !== "ACTIVE") {
+                if (confirm("Account completed/terminated. Start new test session?")) {
+                    forceResetSession();
+                }
+                return;
+            }
 
-            // Direct guaranteed calculation change
-            let pnl = type === 'BUY' ? (Math.random() * 30 - 10) : (Math.random() * 30 - 12);
+            // Normal fluctuation
+            let pnl = type === 'BUY' ? (Math.random() * 25 - 10) : (Math.random() * 25 - 12);
             account.equity += pnl;
 
             renderStats(pnl, type);

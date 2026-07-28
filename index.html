@@ -54,7 +54,7 @@
         .rules span { color: #e2e8f0; font-weight: 600; }
         .btn { background-color: #10b981; color: #000; border: none; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; width: 100%; }
 
-        /* COMPACT LIVE STATS HEADER WITH INNER BACK BUTTON */
+        /* COMPACT LIVE STATS HEADER WITH RESET BUTTON */
         .compact-stats-bar {
             background: #151c2c;
             border: 1px solid #243049;
@@ -102,11 +102,6 @@
         .trade-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
         .trade-btn { background: #10b981; color: #000; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; }
         .sell-btn { background: #ef4444; color: #fff; }
-
-        /* Modal */
-        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
-        .modal-content { background: #151c2c; border: 1px solid #38bdf8; border-radius: 12px; padding: 20px; text-align: center; width: 100%; max-width: 320px; }
-        .close-btn { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; margin-top: 10px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -129,16 +124,15 @@
                 • Target: <span>$100 (10%)</span> | Max Loss: <span>5%</span><br>
                 • Trailing Stop: <span>10% from Peak</span> | Penalty: <span>5% Slippage</span>
             </div>
-            <button class="btn" onclick="openPayment('Micro Mooner', 15, 1000)">Buy $1,000 Challenge</button>
+            <button class="btn" onclick="launchDashboard(1000)">Buy $1,000 Challenge</button>
         </div>
     </div>
 
-    <!-- SECTION 2: FULL DEX TERMINAL (PERSISTENT ACTIVE SESSION) -->
+    <!-- SECTION 2: TERMINAL -->
     <div id="dashboard-view" style="display:none;">
         
-        <!-- COMPACT STATUS LINE + DEX LIST RESET BUTTON -->
         <div class="compact-stats-bar">
-            <button class="reload-chart-btn" onclick="resetDexList()" title="Back to All Coins">← Tokens</button>
+            <button class="reload-chart-btn" onclick="resetDexList()">← Tokens</button>
             <div class="stat-item">
                 <span class="stat-lbl">Equity</span>
                 <span class="stat-val" id="val-equity">$1,000.00</span>
@@ -153,12 +147,10 @@
             </div>
         </div>
 
-        <!-- DEXSCREENER CLEAN CONTAINER -->
         <div class="dex-frame-container">
             <iframe id="dex-iframe" src="https://dexscreener.com/solana?embed=1&theme=dark&trades=0&info=0"></iframe>
         </div>
 
-        <!-- ACTION BUTTONS -->
         <div class="trade-grid">
             <button class="trade-btn" onclick="executeTrade('BUY')">BUY (5% Fee)</button>
             <button class="trade-btn sell-btn" onclick="executeTrade('SELL')">SELL (5% Fee)</button>
@@ -174,7 +166,24 @@
         const user = tg.initDataUnsafe?.user;
         document.getElementById('user-greeting').innerText = user ? `@${user.username || user.first_name}` : "Trader";
 
-        // APP INITIALIZATION: Check if session is already paid/active
+        // HARDWARE BACK BUTTON OVERRIDE LOGIC
+        function setupBackButtonOverride() {
+            window.history.pushState({ page: 'terminal' }, '', '');
+            
+            window.onpopstate = function (event) {
+                // Prevent app closure, reset chart to main tokens list instead
+                resetDexList();
+                // Push state again so next back button press is captured as well
+                window.history.pushState({ page: 'terminal' }, '', '');
+            };
+
+            // Telegram UI BackButton Handler
+            tg.BackButton.show();
+            tg.BackButton.onClick(() => {
+                resetDexList();
+            });
+        }
+
         window.onload = function() {
             const savedSession = localStorage.getItem('moonfund_active_session');
             if (savedSession) {
@@ -194,7 +203,6 @@
             account.target = creditAmount * 1.10;
             account.status = "ACTIVE";
 
-            // Save Active Paid State
             localStorage.setItem('moonfund_active_session', JSON.stringify(account));
             showDashboardUI();
         }
@@ -203,8 +211,7 @@
             document.getElementById('landing-view').style.display = 'none';
             document.getElementById('dashboard-view').style.display = 'block';
             
-            // Hide Telegram native BackButton so paid users don't exit to landing
-            tg.BackButton.hide();
+            setupBackButtonOverride();
             updateDashboardUI();
         }
 
@@ -214,7 +221,6 @@
             document.getElementById('val-stop').innerText = `$${stopLimit.toFixed(2)}`;
             document.getElementById('val-target').innerText = `$${account.target.toFixed(2)}`;
 
-            // Persist state updates
             localStorage.setItem('moonfund_active_session', JSON.stringify(account));
 
             if (account.equity <= stopLimit) {
@@ -244,10 +250,6 @@
             }
 
             updateDashboardUI();
-        }
-
-        function openPayment(pkg, fee, credit) {
-            launchDashboard(credit); // Automated activation for testing session flow
         }
     </script>
 </body>

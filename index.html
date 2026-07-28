@@ -5,10 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MoonFund Evaluation Terminal</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
     <style>
+        * { box-sizing: border-box; }
         body {
             font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
             background-color: #0b0f19;
@@ -68,7 +67,7 @@
         }
         .stat-item { display: flex; flex-direction: column; text-align: center; }
         .stat-lbl { font-size: 9px; color: #94a3b8; text-transform: uppercase; }
-        .stat-val { font-weight: bold; color: #38bdf8; font-size: 12px; margin-top: 1px; transition: all 0.2s ease; }
+        .stat-val { font-weight: bold; color: #38bdf8; font-size: 12px; margin-top: 1px; }
 
         .reload-chart-btn {
             background: #38bdf8;
@@ -86,18 +85,18 @@
             text-align: center;
             font-size: 11px;
             font-weight: bold;
-            padding: 3px;
+            padding: 4px;
             border-radius: 4px;
             margin-bottom: 6px;
             background: #1e293b;
-            color: #94a3b8;
+            color: #38bdf8;
         }
 
         /* DEX CONTAINER */
         .dex-frame-container {
             width: 100%;
-            height: calc(100vh - 145px);
-            min-height: 450px;
+            height: calc(100vh - 150px);
+            min-height: 440px;
             background: #000;
             border-radius: 8px;
             overflow: hidden;
@@ -112,18 +111,18 @@
         }
 
         .trade-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-        .trade-btn { 
-            background: #10b981; 
-            color: #000; 
+        .action-btn { 
             border: none; 
             padding: 12px; 
             border-radius: 6px; 
             font-weight: bold; 
             cursor: pointer; 
             font-size: 14px; 
-            active: opacity 0.7;
+            width: 100%;
         }
-        .sell-btn { background: #ef4444; color: #fff; }
+        .buy-style { background: #10b981; color: #000; }
+        .sell-style { background: #ef4444; color: #fff; }
+        .action-btn:active { opacity: 0.6; }
     </style>
 </head>
 <body>
@@ -132,10 +131,10 @@
     <div id="landing-view">
         <div class="header">
             <h1>🚀 MoonFund Evaluation</h1>
-            <div class="user-greeting" id="user-greeting">Loading...</div>
+            <div class="user-greeting" id="user-greeting">Trader</div>
         </div>
 
-        <button class="test-bypass-btn" onclick="launchDashboard(1000)">⚡ Test Bypass (Activate Terminal)</button>
+        <button class="test-bypass-btn" id="btn-bypass">⚡ Test Bypass (Activate Terminal)</button>
 
         <div class="card">
             <div class="card-header">
@@ -144,9 +143,9 @@
             </div>
             <div class="rules">
                 • Target: <span>$100 (10%)</span> | Max Loss: <span>5% ($950 Stop)</span><br>
-                • Fee: <span>Controlled execution</span>
+                • Execution: <span>Live Simulation Engine</span>
             </div>
-            <button class="btn" onclick="launchDashboard(1000)">Buy $1,000 Challenge</button>
+            <button class="btn" id="btn-challenge">Buy $1,000 Challenge</button>
         </div>
     </div>
 
@@ -154,7 +153,7 @@
     <div id="dashboard-view" style="display:none;">
         
         <div class="compact-stats-bar">
-            <button class="reload-chart-btn" onclick="resetDexList()">← Tokens</button>
+            <button class="reload-chart-btn" id="btn-reset-dex">← Tokens</button>
             <div class="stat-item">
                 <span class="stat-lbl">Equity</span>
                 <span class="stat-val" id="val-equity">$1,000.00</span>
@@ -176,49 +175,53 @@
         </div>
 
         <div class="trade-grid">
-            <button class="trade-btn" onclick="executeTrade('BUY')">BUY</button>
-            <button class="trade-btn sell-btn" onclick="executeTrade('SELL')">SELL</button>
+            <button class="action-btn buy-style" id="btn-trade-buy">BUY</button>
+            <button class="action-btn sell-style" id="btn-trade-sell">SELL</button>
         </div>
     </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+        const tg = window.Telegram?.WebApp;
+        if (tg) tg.expand();
 
         let account = { initialBalance: 1000, equity: 1000, target: 1100, hardStop: 950, status: "ACTIVE" };
 
-        const user = tg.initDataUnsafe?.user;
-        document.getElementById('user-greeting').innerText = user ? `@${user.username || user.first_name}` : "Trader";
+        window.addEventListener('DOMContentLoaded', () => {
+            if (tg && tg.initDataUnsafe?.user) {
+                const u = tg.initDataUnsafe.user;
+                document.getElementById('user-greeting').innerText = `@${u.username || u.first_name}`;
+            }
 
-        function setupBackButtonOverride() {
-            window.history.pushState({ page: 'terminal' }, '', '');
-            window.onpopstate = function () {
-                resetDexList();
-                window.history.pushState({ page: 'terminal' }, '', '');
-            };
+            // Direct Event Listeners (Bypasses webview inline click block)
+            document.getElementById('btn-bypass').addEventListener('click', () => launchDashboard(1000));
+            document.getElementById('btn-challenge').addEventListener('click', () => launchDashboard(1000));
+            document.getElementById('btn-reset-dex').addEventListener('click', resetDexList);
+            document.getElementById('btn-trade-buy').addEventListener('click', () => processTrade('BUY'));
+            document.getElementById('btn-trade-sell').addEventListener('click', () => processTrade('SELL'));
 
-            tg.BackButton.show();
-            tg.BackButton.onClick(() => { resetDexList(); });
-        }
-
-        window.onload = function() {
             const savedSession = localStorage.getItem('moonfund_active_session');
             if (savedSession) {
-                account = JSON.parse(savedSession);
-                showDashboardUI();
+                try {
+                    account = JSON.parse(savedSession);
+                    showDashboardUI();
+                } catch(e) {
+                    localStorage.removeItem('moonfund_active_session');
+                }
             }
-        };
+        });
 
         function resetDexList() {
             document.getElementById('dex-iframe').src = "https://dexscreener.com/solana?embed=1&theme=dark&trades=0&info=0";
         }
 
         function launchDashboard(creditAmount) {
-            account.initialBalance = creditAmount;
-            account.equity = creditAmount;
-            account.target = creditAmount * 1.10;
-            account.hardStop = creditAmount * 0.95;
-            account.status = "ACTIVE";
+            account = {
+                initialBalance: creditAmount,
+                equity: creditAmount,
+                target: creditAmount * 1.10,
+                hardStop: creditAmount * 0.95,
+                status: "ACTIVE"
+            };
 
             localStorage.setItem('moonfund_active_session', JSON.stringify(account));
             showDashboardUI();
@@ -227,54 +230,61 @@
         function showDashboardUI() {
             document.getElementById('landing-view').style.display = 'none';
             document.getElementById('dashboard-view').style.display = 'block';
-            setupBackButtonOverride();
-            updateDashboardUI();
+            setupBackButton();
+            renderStats();
         }
 
-        function updateDashboardUI(lastChange = 0, type = '') {
-            const equityEl = document.getElementById('val-equity');
-            const bannerEl = document.getElementById('status-banner');
+        function setupBackButton() {
+            window.history.pushState({ page: 'terminal' }, '', '');
+            window.onpopstate = function () {
+                resetDexList();
+                window.history.pushState({ page: 'terminal' }, '', '');
+            };
 
-            equityEl.innerText = `$${account.equity.toFixed(2)}`;
+            if (tg && tg.BackButton) {
+                tg.BackButton.show();
+                tg.BackButton.onClick(() => { resetDexList(); });
+            }
+        }
+
+        function renderStats(pnl = null, type = '') {
+            document.getElementById('val-equity').innerText = `$${account.equity.toFixed(2)}`;
             document.getElementById('val-stop').innerText = `$${account.hardStop.toFixed(2)}`;
             document.getElementById('val-target').innerText = `$${account.target.toFixed(2)}`;
 
-            if (type !== '') {
-                const isProfit = lastChange >= 0;
-                bannerEl.innerText = `${type}: ${isProfit ? '+' : ''}$${lastChange.toFixed(2)} (${(lastChange / account.equity * 100).toFixed(2)}%)`;
-                bannerEl.style.color = isProfit ? '#10b981' : '#ef4444';
-                equityEl.style.color = isProfit ? '#10b981' : '#ef4444';
-                
-                setTimeout(() => {
-                    equityEl.style.color = '#38bdf8';
-                }, 400);
+            const banner = document.getElementById('status-banner');
+
+            if (pnl !== null) {
+                const isWin = pnl >= 0;
+                banner.innerText = `${type}: ${isWin ? '+' : ''}$${pnl.toFixed(2)}`;
+                banner.style.color = isWin ? '#10b981' : '#ef4444';
             }
 
             localStorage.setItem('moonfund_active_session', JSON.stringify(account));
 
             if (account.equity <= account.hardStop) {
                 account.status = "TERMINATED";
-                bannerEl.innerText = "🚨 MAX DRAWDOWN BREACHED! RESETTING...";
-                bannerEl.style.color = "#ef4444";
+                banner.innerText = "🚨 MAX LOSS HIT! ACCOUNT TERMINATED.";
+                banner.style.color = "#ef4444";
                 setTimeout(() => {
                     localStorage.removeItem('moonfund_active_session');
                     location.reload();
-                }, 1500);
+                }, 1200);
             } else if (account.equity >= account.target) {
                 account.status = "PASSED";
-                bannerEl.innerText = "🏆 EVALUATION PASSED! CONGRATULATIONS!";
-                bannerEl.style.color = "#10b981";
+                banner.innerText = "🏆 TARGET REACHED! EVALUATION PASSED!";
+                banner.style.color = "#10b981";
             }
         }
 
-        function executeTrade(type) {
+        function processTrade(type) {
             if (account.status !== "ACTIVE") return;
 
-            // Simple active fluctuation logic: -$15 to +$30
-            let pnl = type === 'BUY' ? (Math.random() * 40 - 15) : (Math.random() * 40 - 20);
+            // Calculated Simulation Trade (-$12 to +$25)
+            let pnl = type === 'BUY' ? (Math.random() * 37 - 12) : (Math.random() * 37 - 15);
             account.equity += pnl;
 
-            updateDashboardUI(pnl, type);
+            renderStats(pnl, type);
         }
     </script>
 </body>

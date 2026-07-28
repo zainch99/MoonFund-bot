@@ -64,11 +64,11 @@
             justify-content: space-between;
             align-items: center;
             font-size: 11px;
-            margin-bottom: 6px;
+            margin-bottom: 4px;
         }
         .stat-item { display: flex; flex-direction: column; text-align: center; }
         .stat-lbl { font-size: 9px; color: #94a3b8; text-transform: uppercase; }
-        .stat-val { font-weight: bold; color: #38bdf8; font-size: 12px; margin-top: 1px; }
+        .stat-val { font-weight: bold; color: #38bdf8; font-size: 12px; margin-top: 1px; transition: all 0.2s ease; }
 
         .reload-chart-btn {
             background: #38bdf8;
@@ -81,11 +81,23 @@
             cursor: pointer;
         }
 
+        /* TRADE STATUS BANNER */
+        .trade-status-banner {
+            text-align: center;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 3px;
+            border-radius: 4px;
+            margin-bottom: 6px;
+            background: #1e293b;
+            color: #94a3b8;
+        }
+
         /* DEX CONTAINER */
         .dex-frame-container {
             width: 100%;
-            height: calc(100vh - 120px);
-            min-height: 480px;
+            height: calc(100vh - 145px);
+            min-height: 450px;
             background: #000;
             border-radius: 8px;
             overflow: hidden;
@@ -100,7 +112,17 @@
         }
 
         .trade-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-        .trade-btn { background: #10b981; color: #000; border: none; padding: 10px; border-radius: 6px; font-weight: bold; cursor: pointer; font-size: 13px; }
+        .trade-btn { 
+            background: #10b981; 
+            color: #000; 
+            border: none; 
+            padding: 12px; 
+            border-radius: 6px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            font-size: 14px; 
+            active: opacity 0.7;
+        }
         .sell-btn { background: #ef4444; color: #fff; }
     </style>
 </head>
@@ -122,7 +144,7 @@
             </div>
             <div class="rules">
                 • Target: <span>$100 (10%)</span> | Max Loss: <span>5% ($950 Stop)</span><br>
-                • Penalty: <span>1% Slippage per trade</span>
+                • Fee: <span>Controlled execution</span>
             </div>
             <button class="btn" onclick="launchDashboard(1000)">Buy $1,000 Challenge</button>
         </div>
@@ -147,13 +169,15 @@
             </div>
         </div>
 
+        <div class="trade-status-banner" id="status-banner">Ready to Trade</div>
+
         <div class="dex-frame-container">
             <iframe id="dex-iframe" src="https://dexscreener.com/solana?embed=1&theme=dark&trades=0&info=0"></iframe>
         </div>
 
         <div class="trade-grid">
-            <button class="trade-btn" onclick="executeTrade('BUY')">BUY (Simulate)</button>
-            <button class="trade-btn sell-btn" onclick="executeTrade('SELL')">SELL (Simulate)</button>
+            <button class="trade-btn" onclick="executeTrade('BUY')">BUY</button>
+            <button class="trade-btn sell-btn" onclick="executeTrade('SELL')">SELL</button>
         </div>
     </div>
 
@@ -161,7 +185,7 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        let account = { initialBalance: 1000, equity: 1000, highWaterMark: 1000, target: 1100, hardStop: 950, status: "ACTIVE" };
+        let account = { initialBalance: 1000, equity: 1000, target: 1100, hardStop: 950, status: "ACTIVE" };
 
         const user = tg.initDataUnsafe?.user;
         document.getElementById('user-greeting').innerText = user ? `@${user.username || user.first_name}` : "Trader";
@@ -192,9 +216,8 @@
         function launchDashboard(creditAmount) {
             account.initialBalance = creditAmount;
             account.equity = creditAmount;
-            account.highWaterMark = creditAmount;
             account.target = creditAmount * 1.10;
-            account.hardStop = creditAmount * 0.95; // Exact 5% Max Drawdown ($950)
+            account.hardStop = creditAmount * 0.95;
             account.status = "ACTIVE";
 
             localStorage.setItem('moonfund_active_session', JSON.stringify(account));
@@ -208,39 +231,50 @@
             updateDashboardUI();
         }
 
-        function updateDashboardUI() {
-            document.getElementById('val-equity').innerText = `$${account.equity.toFixed(2)}`;
+        function updateDashboardUI(lastChange = 0, type = '') {
+            const equityEl = document.getElementById('val-equity');
+            const bannerEl = document.getElementById('status-banner');
+
+            equityEl.innerText = `$${account.equity.toFixed(2)}`;
             document.getElementById('val-stop').innerText = `$${account.hardStop.toFixed(2)}`;
             document.getElementById('val-target').innerText = `$${account.target.toFixed(2)}`;
 
+            if (type !== '') {
+                const isProfit = lastChange >= 0;
+                bannerEl.innerText = `${type}: ${isProfit ? '+' : ''}$${lastChange.toFixed(2)} (${(lastChange / account.equity * 100).toFixed(2)}%)`;
+                bannerEl.style.color = isProfit ? '#10b981' : '#ef4444';
+                equityEl.style.color = isProfit ? '#10b981' : '#ef4444';
+                
+                setTimeout(() => {
+                    equityEl.style.color = '#38bdf8';
+                }, 400);
+            }
+
             localStorage.setItem('moonfund_active_session', JSON.stringify(account));
 
-            // Hard Stop check (below $950)
             if (account.equity <= account.hardStop) {
                 account.status = "TERMINATED";
-                alert("CRITICAL BREACH: 5% Max Loss Hit ($950)! Account Terminated.");
-                localStorage.removeItem('moonfund_active_session');
-                location.reload(); // Returns back to packages page on breach
+                bannerEl.innerText = "🚨 MAX DRAWDOWN BREACHED! RESETTING...";
+                bannerEl.style.color = "#ef4444";
+                setTimeout(() => {
+                    localStorage.removeItem('moonfund_active_session');
+                    location.reload();
+                }, 1500);
             } else if (account.equity >= account.target) {
                 account.status = "PASSED";
-                alert("CONGRATULATIONS! Target Reached ($1,100). Evaluation Passed!");
+                bannerEl.innerText = "🏆 EVALUATION PASSED! CONGRATULATIONS!";
+                bannerEl.style.color = "#10b981";
             }
         }
 
         function executeTrade(type) {
             if (account.status !== "ACTIVE") return;
 
-            // Controlled Simulation: -2% to +4% return per click
-            let percentageOutcome = (Math.random() * 0.06) - 0.02; // Controlled outcome
-            let changeAmount = account.equity * percentageOutcome;
+            // Simple active fluctuation logic: -$15 to +$30
+            let pnl = type === 'BUY' ? (Math.random() * 40 - 15) : (Math.random() * 40 - 20);
+            account.equity += pnl;
 
-            account.equity += changeAmount;
-
-            if (account.equity > account.highWaterMark) {
-                account.highWaterMark = account.equity;
-            }
-
-            updateDashboardUI();
+            updateDashboardUI(pnl, type);
         }
     </script>
 </body>

@@ -68,7 +68,7 @@
         }
         .stat-item { display: flex; flex-direction: column; text-align: center; }
         .stat-lbl { font-size: 9px; color: #94a3b8; text-transform: uppercase; }
-        .stat-val { font-weight: bold; color: #38bdf8; font-size: 12px; margin-top: 1px; }
+        .stat-val { font-weight: bold; color: #38bdf8; font-size: 12px; margin-top: 1px; transition: color 0.2s; }
 
         .reload-chart-btn {
             background: #38bdf8;
@@ -148,7 +148,7 @@
             </div>
             <div class="rules">
                 • Target: <span>$100 (10%)</span> | Max Loss: <span>5% ($950 Stop)</span><br>
-                • Rules: <span>Interactive Trading Simulator</span>
+                • Rules: <span>Realistic Simulation Engine</span>
             </div>
             <button class="btn" onclick="launchDashboard(1000)">Buy $1,000 Challenge</button>
         </div>
@@ -252,7 +252,8 @@
         }
 
         function renderStats(pnl = null, type = '') {
-            document.getElementById('val-equity').innerText = `$${account.equity.toFixed(2)}`;
+            const equityEl = document.getElementById('val-equity');
+            equityEl.innerText = `$${account.equity.toFixed(2)}`;
             document.getElementById('val-stop').innerText = `$${account.hardStop.toFixed(2)}`;
             document.getElementById('val-target').innerText = `$${account.target.toFixed(2)}`;
 
@@ -261,20 +262,24 @@
 
             if (pnl !== null) {
                 const isWin = pnl >= 0;
-                banner.innerText = `${type}: ${isWin ? '+' : ''}$${pnl.toFixed(2)}`;
+                banner.innerText = `${type} EXECUTED: ${isWin ? '+' : ''}$${pnl.toFixed(2)}`;
                 banner.style.color = isWin ? '#10b981' : '#ef4444';
+                
+                // Color animation for equity change
+                equityEl.style.color = isWin ? '#10b981' : '#ef4444';
+                setTimeout(() => { equityEl.style.color = '#38bdf8'; }, 300);
             }
 
             localStorage.setItem('moonfund_active_session', JSON.stringify(account));
 
             if (account.equity <= account.hardStop) {
                 account.status = "TERMINATED";
-                banner.innerText = "🚨 MAX LOSS HIT! ACCOUNT TERMINATED.";
+                banner.innerText = "🚨 MAX LOSS HIT ($950)! ACCOUNT TERMINATED.";
                 banner.style.color = "#ef4444";
                 resetBtn.style.display = "block";
             } else if (account.equity >= account.target) {
                 account.status = "PASSED";
-                banner.innerText = "🏆 TARGET REACHED! EVALUATION PASSED!";
+                banner.innerText = "🏆 TARGET REACHED ($1100)! EVALUATION PASSED!";
                 banner.style.color = "#10b981";
                 resetBtn.style.display = "block";
             } else {
@@ -283,18 +288,26 @@
         }
 
         function processTrade(type) {
-            // If passed or terminated, allow auto-reset on trade
+            // Auto reset if completed or terminated
             if (account.status !== "ACTIVE") {
-                if (confirm("Account completed/terminated. Start new test session?")) {
-                    forceResetSession();
-                }
+                forceResetSession();
                 return;
             }
 
-            // Normal fluctuation
-            let pnl = type === 'BUY' ? (Math.random() * 25 - 10) : (Math.random() * 25 - 12);
-            account.equity += pnl;
+            // REALISTIC SIMULATION LOGIC
+            // 55% Chance of Profit, 45% Chance of Loss
+            const isProfit = Math.random() < 0.55; 
+            let pnl = 0;
 
+            if (isProfit) {
+                // Profit between +$8.00 and +$25.00
+                pnl = +(Math.random() * 17 + 8).toFixed(2);
+            } else {
+                // Loss between -$4.00 and -$12.00
+                pnl = -(Math.random() * 8 + 4).toFixed(2);
+            }
+
+            account.equity = +(account.equity + pnl).toFixed(2);
             renderStats(pnl, type);
         }
     </script>

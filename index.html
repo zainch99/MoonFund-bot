@@ -28,6 +28,18 @@
             display: inline-block;
             margin-bottom: 16px;
         }
+        .test-bypass-btn {
+            background-color: #f59e0b;
+            color: #000;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 20px;
+        }
         .card {
             background: #1e293b;
             border: 1px solid #334155;
@@ -125,6 +137,9 @@
             <div class="user-greeting" id="user-greeting">Loading...</div>
         </div>
 
+        <!-- Testing Bypass Button -->
+        <button class="test-bypass-btn" onclick="launchDashboard(1000)">⚡ Test Bypass (Open Dashboard)</button>
+
         <div class="card">
             <div class="card-header">
                 <span class="card-title">Micro Mooner ($1,000)</span>
@@ -204,6 +219,8 @@
                 <button class="trade-btn sell-btn" onclick="processSimulatedTrade('SELL')">SELL SOL (5% Penalty)</button>
             </div>
         </div>
+        
+        <button class="close-btn" style="width:100%; padding:10px; background:#334155; margin-top:10px;" onclick="location.reload()">Back to Packages</button>
     </div>
 
     <!-- Solana Pay Modal -->
@@ -229,7 +246,6 @@
         let solPriceUsd = 0;
         let checkInterval = null;
         
-        // Active Account Object
         let account = {
             initialBalance: 1000,
             equity: 1000,
@@ -300,7 +316,7 @@
                         
                         setTimeout(() => {
                             closePayment();
-                            launchDashboard();
+                            launchDashboard(account.initialBalance);
                         }, 1500);
                     }
                 } catch (e) {
@@ -314,7 +330,13 @@
             document.getElementById('paymentModal').style.display = 'none';
         }
 
-        function launchDashboard() {
+        function launchDashboard(creditAmount) {
+            account.initialBalance = creditAmount;
+            account.equity = creditAmount;
+            account.highWaterMark = creditAmount;
+            account.target = creditAmount * 1.10;
+            account.status = "ACTIVE";
+
             document.getElementById('landing-view').style.display = 'none';
             document.getElementById('dashboard-view').style.display = 'block';
             updateDashboardUI();
@@ -340,23 +362,18 @@
             }
         }
 
-        // --- STRICT SIMULATED EXECUTION ENGINE ---
         function processSimulatedTrade(type) {
             if (account.status !== "ACTIVE") {
                 alert("Account is not active.");
                 return;
             }
 
-            // Simulate market move (-8% to +10%)
             let rawOutcomePercent = (Math.random() * 0.18) - 0.08; 
-            
-            // Deduct 5% Slippage Penalty hard on each execution
             let netOutcomePercent = rawOutcomePercent - 0.05; 
 
             let delta = account.equity * netOutcomePercent;
             account.equity += delta;
 
-            // Update High-Water Mark if new peak hit
             if (account.equity > account.highWaterMark) {
                 account.highWaterMark = account.equity;
             }

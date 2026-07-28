@@ -16,17 +16,17 @@
             margin: 0;
             padding: 12px;
         }
-        .header { text-align: center; margin-bottom: 12px; }
-        .header h1 { color: #38bdf8; font-size: 18px; margin: 0; }
+        .header { text-align: center; margin-bottom: 10px; }
+        .header h1 { color: #38bdf8; font-size: 16px; margin: 0; }
         .user-greeting {
             background: rgba(56, 189, 248, 0.1);
             color: #38bdf8;
             padding: 4px 10px;
             border-radius: 6px;
-            font-size: 12px;
+            font-size: 11px;
             font-weight: 600;
             display: inline-block;
-            margin-top: 6px;
+            margin-top: 4px;
         }
         .test-bypass-btn {
             background-color: #f59e0b;
@@ -44,32 +44,20 @@
             background: #151c2c;
             border: 1px solid #243049;
             border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 12px;
+            padding: 10px;
+            margin-bottom: 10px;
         }
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
-        .card-title { font-size: 15px; font-weight: bold; color: #f8fafc; }
-        .card-price { background: #0284c7; color: #fff; padding: 2px 8px; border-radius: 12px; font-size: 12px; font-weight: bold; }
-        .rules { font-size: 11px; color: #94a3b8; line-height: 1.5; margin-bottom: 10px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .card-title { font-size: 14px; font-weight: bold; color: #f8fafc; }
+        .card-price { background: #0284c7; color: #fff; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+        .rules { font-size: 11px; color: #94a3b8; line-height: 1.4; margin-bottom: 8px; }
         .rules span { color: #e2e8f0; font-weight: 600; }
         .btn { background-color: #10b981; color: #000; border: none; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; width: 100%; }
 
-        /* DEX Style Controls */
-        .token-select {
+        /* DEX Live Feed & Chart Container */
+        .dex-frame-container {
             width: 100%;
-            background: #0b0f19;
-            color: #38bdf8;
-            border: 1px solid #243049;
-            padding: 10px;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 14px;
-            margin-bottom: 10px;
-            outline: none;
-        }
-        .chart-container {
-            width: 100%;
-            height: 260px;
+            height: 280px;
             background: #000;
             border-radius: 8px;
             overflow: hidden;
@@ -78,10 +66,10 @@
         }
         iframe { width: 100%; height: 100%; border: none; }
 
-        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 8px; }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; margin-bottom: 6px; }
         .stat-box { background: #0b0f19; padding: 8px; border-radius: 6px; border: 1px solid #243049; }
         .stat-label { font-size: 10px; color: #94a3b8; }
-        .stat-value { font-size: 14px; font-weight: bold; color: #38bdf8; margin-top: 2px; }
+        .stat-value { font-size: 13px; font-weight: bold; color: #38bdf8; margin-top: 2px; }
         .danger-val { color: #ef4444; }
 
         .trade-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
@@ -97,14 +85,14 @@
 </head>
 <body>
 
-    <!-- SECTION 1: LANDING PACKAGES -->
+    <!-- SECTION 1: PACKAGES LANDING -->
     <div id="landing-view">
         <div class="header">
             <h1>🚀 MoonFund Evaluation</h1>
             <div class="user-greeting" id="user-greeting">Loading...</div>
         </div>
 
-        <button class="test-bypass-btn" onclick="launchDashboard(1000)">⚡ Test Bypass (Open DEX Terminal)</button>
+        <button class="test-bypass-btn" onclick="launchDashboard(1000)">⚡ Test Bypass (Open Live Feed)</button>
 
         <div class="card">
             <div class="card-header">
@@ -113,37 +101,29 @@
             </div>
             <div class="rules">
                 • Target: <span>$100 (10%)</span> | Max Loss: <span>5%</span><br>
-                • Trailing Stop: <span>10% from Peak</span> | Penalty: <span>5% Hard Slippage</span>
+                • Trailing Stop: <span>10% from Peak</span> | Penalty: <span>5% Slippage</span>
             </div>
             <button class="btn" onclick="openPayment('Micro Mooner', 15, 1000)">Buy $1,000 Challenge</button>
         </div>
     </div>
 
-    <!-- SECTION 2: DEX-STYLE TRADING TERMINAL -->
+    <!-- SECTION 2: LIVE NEW LAUNCHES TERMINAL -->
     <div id="dashboard-view" style="display:none;">
-        <div class="header" style="margin-bottom:8px;">
-            <h1 style="font-size:16px;">🔥 Meme Coin DEX Terminal</h1>
+        <div class="header" style="margin-bottom:6px;">
+            <h1 style="font-size:15px;">🔥 Live New Solana Launches</h1>
             <div class="user-greeting" id="dash-status" style="background: rgba(16, 185, 129, 0.2); color: #10b981;">STATUS: ACTIVE</div>
         </div>
 
-        <!-- TOKEN SELECTOR -->
-        <select class="token-select" id="tokenSelector" onchange="changeTokenChart()">
-            <option value="SOL/USDT">SOL/USDT (Solana Native)</option>
-            <option value="BONK/USDT">BONK/USDT (Bonk Token)</option>
-            <option value="WIF/USDT">WIF/USDT (dogwifhat)</option>
-            <option value="PEPE/USDT">PEPE/USDT (Pepe Coin)</option>
-        </select>
-
-        <!-- LIVE TRADINGVIEW / DEX CHART -->
-        <div class="chart-container">
-            <iframe id="tradingview-chart" src="https://s.tradingview.com/widgetembed/?frameElementId=tradingview_1&symbol=BINANCE%3ASOLUSDT&interval=1&hidesidetoolbar=1&symboledit=0&saveimage=0&toolbarbg=f1f3f6&studies=[]&theme=dark&style=1&timezone=Etc%2FUTC"></iframe>
+        <!-- DEXSCREENER EMBEDDED LIVE FEED/CHART WIDGET -->
+        <div class="dex-frame-container">
+            <iframe src="https://dexscreener.com/solana?embed=1&theme=dark&trades=0&info=0"></iframe>
         </div>
 
-        <!-- STATS PANEL -->
+        <!-- EVALUATION ACCOUNT STATS -->
         <div class="card">
             <div class="stat-grid">
                 <div class="stat-box">
-                    <div class="stat-label">Current Equity</div>
+                    <div class="stat-label">Virtual Equity</div>
                     <div class="stat-value" id="val-equity">$1,000.00</div>
                 </div>
                 <div class="stat-box">
@@ -159,18 +139,18 @@
                     <div class="stat-value" style="color: #10b981;" id="val-target">$1,100.00</div>
                 </div>
             </div>
-            <p style="font-size: 10px; color: #94a3b8; text-align: center; margin: 0;">⚡ 5% Slippage Penalty Applied Per Execution</p>
+            <p style="font-size: 9px; color: #94a3b8; text-align: center; margin: 0;">Trading Live Pump/Dex Screener Coins using Evaluation Credit</p>
         </div>
 
-        <!-- DEX BUY/SELL PANEL -->
-        <div class="card">
+        <!-- EXECUTION BUTTONS -->
+        <div class="card" style="margin-bottom:8px;">
             <div class="trade-grid">
-                <button class="trade-btn" onclick="executeMarketOrder('BUY')">BUY (5% Slippage)</button>
-                <button class="trade-btn sell-btn" onclick="executeMarketOrder('SELL')">SELL (5% Slippage)</button>
+                <button class="trade-btn" onclick="executeTrade('BUY')">BUY (5% Slippage)</button>
+                <button class="trade-btn sell-btn" onclick="executeTrade('SELL')">SELL (5% Slippage)</button>
             </div>
         </div>
 
-        <button class="close-btn" style="width:100%; background:#243049;" onclick="location.reload()">Back to Packages</button>
+        <button class="close-btn" style="width:100%; background:#243049; padding:8px;" onclick="location.reload()">Back to Packages</button>
     </div>
 
     <!-- Solana Pay Modal -->
@@ -191,12 +171,6 @@
 
         const user = tg.initDataUnsafe?.user;
         document.getElementById('user-greeting').innerText = user ? `@${user.username || user.first_name}` : "Trader";
-
-        function changeTokenChart() {
-            const token = document.getElementById('tokenSelector').value.replace('/', '');
-            const chartIframe = document.getElementById('tradingview-chart');
-            chartIframe.src = `https://s.tradingview.com/widgetembed/?frameElementId=tradingview_1&symbol=BINANCE%3A${token}&interval=1&hidesidetoolbar=1&symboledit=0&saveimage=0&toolbarbg=f1f3f6&studies=[]&theme=dark&style=1&timezone=Etc%2FUTC`;
-        }
 
         function launchDashboard(creditAmount) {
             account.initialBalance = creditAmount;
@@ -226,19 +200,19 @@
             } else if (account.equity >= account.target) {
                 account.status = "PASSED";
                 document.getElementById('dash-status').innerText = "STATUS: PASSED 🎉";
-                alert("CONGRATULATIONS! Profit Target Passed.");
+                alert("CONGRATULATIONS! Profit Target Reached.");
             }
         }
 
-        function executeMarketOrder(type) {
+        function executeTrade(type) {
             if (account.status !== "ACTIVE") {
                 alert("Account is not active.");
                 return;
             }
 
-            // Real market-style volatility simulation (-8% to +10%)
-            let marketMove = (Math.random() * 0.18) - 0.08;
-            let netOutcome = marketMove - 0.05; // 5% Penalty Deduction
+            // High volatility meme coin simulation (-12% to +15%) with 5% execution fee
+            let marketMove = (Math.random() * 0.27) - 0.12;
+            let netOutcome = marketMove - 0.05;
 
             account.equity += (account.equity * netOutcome);
 

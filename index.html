@@ -54,12 +54,12 @@
         .rules span { color: #e2e8f0; font-weight: 600; }
         .btn { background-color: #10b981; color: #000; border: none; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; width: 100%; }
 
-        /* COMPACT LIVE STATS HEADER */
+        /* COMPACT LIVE STATS HEADER WITH INNER BACK BUTTON */
         .compact-stats-bar {
             background: #151c2c;
             border: 1px solid #243049;
             border-radius: 6px;
-            padding: 6px 10px;
+            padding: 6px 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
@@ -70,10 +70,21 @@
         .stat-lbl { font-size: 9px; color: #94a3b8; text-transform: uppercase; }
         .stat-val { font-weight: bold; color: #38bdf8; font-size: 12px; margin-top: 1px; }
 
-        /* DEX CONTAINER WITH BOTTOM BRANDING CROP HIDE */
+        .reload-chart-btn {
+            background: #38bdf8;
+            color: #000;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+
+        /* DEX CONTAINER */
         .dex-frame-container {
             width: 100%;
-            height: calc(100vh - 130px);
+            height: calc(100vh - 120px);
             min-height: 480px;
             background: #000;
             border-radius: 8px;
@@ -82,12 +93,10 @@
             margin-bottom: 6px;
             position: relative;
         }
-        /* Crop out bottom dexscreener footer strip */
         iframe {
             width: 100%;
             height: calc(100% + 38px);
             border: none;
-            margin-top: 0px;
         }
 
         .trade-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
@@ -97,19 +106,19 @@
         /* Modal */
         .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0, 0, 0, 0.9); justify-content: center; align-items: center; padding: 20px; box-sizing: border-box; }
         .modal-content { background: #151c2c; border: 1px solid #38bdf8; border-radius: 12px; padding: 20px; text-align: center; width: 100%; max-width: 320px; }
-        #qrcode { background: #fff; padding: 10px; border-radius: 8px; display: inline-block; margin: 10px 0; }
         .close-btn { background: #ef4444; color: white; border: none; padding: 8px 16px; border-radius: 6px; margin-top: 10px; cursor: pointer; font-weight: bold; }
     </style>
 </head>
 <body>
 
+    <!-- SECTION 1: PACKAGES LANDING -->
     <div id="landing-view">
         <div class="header">
             <h1>🚀 MoonFund Evaluation</h1>
             <div class="user-greeting" id="user-greeting">Loading...</div>
         </div>
 
-        <button class="test-bypass-btn" onclick="launchDashboard(1000)">⚡ Test Bypass (Open Full Terminal)</button>
+        <button class="test-bypass-btn" onclick="launchDashboard(1000)">⚡ Test Bypass (Activate Terminal)</button>
 
         <div class="card">
             <div class="card-header">
@@ -124,16 +133,15 @@
         </div>
     </div>
 
+    <!-- SECTION 2: FULL DEX TERMINAL (PERSISTENT ACTIVE SESSION) -->
     <div id="dashboard-view" style="display:none;">
         
+        <!-- COMPACT STATUS LINE + DEX LIST RESET BUTTON -->
         <div class="compact-stats-bar">
+            <button class="reload-chart-btn" onclick="resetDexList()" title="Back to All Coins">← Tokens</button>
             <div class="stat-item">
                 <span class="stat-lbl">Equity</span>
                 <span class="stat-val" id="val-equity">$1,000.00</span>
-            </div>
-            <div class="stat-item">
-                <span class="stat-lbl">High Peak</span>
-                <span class="stat-val" id="val-peak" style="color: #cbd5e1;">$1,000.00</span>
             </div>
             <div class="stat-item">
                 <span class="stat-lbl">Hard Stop</span>
@@ -145,23 +153,15 @@
             </div>
         </div>
 
+        <!-- DEXSCREENER CLEAN CONTAINER -->
         <div class="dex-frame-container">
-            <iframe src="https://dexscreener.com/solana?embed=1&theme=dark&trades=0&info=0"></iframe>
+            <iframe id="dex-iframe" src="https://dexscreener.com/solana?embed=1&theme=dark&trades=0&info=0"></iframe>
         </div>
 
+        <!-- ACTION BUTTONS -->
         <div class="trade-grid">
-            <button class="trade-btn" onclick="executeTrade('BUY')">BUY (5% Penalty)</button>
-            <button class="trade-btn sell-btn" onclick="executeTrade('SELL')">SELL (5% Penalty)</button>
-        </div>
-
-    </div>
-
-    <div class="modal" id="paymentModal">
-        <div class="modal-content">
-            <h3 style="margin-top:0; color:#38bdf8;" id="modalTitle">Scan to Pay</h3>
-            <div id="qrcode"></div>
-            <div style="font-size:12px; color:#fbbf24; margin-top:5px;" id="statusBox">⏳ Waiting...</div>
-            <button class="close-btn" onclick="closePayment()">Cancel</button>
+            <button class="trade-btn" onclick="executeTrade('BUY')">BUY (5% Fee)</button>
+            <button class="trade-btn sell-btn" onclick="executeTrade('SELL')">SELL (5% Fee)</button>
         </div>
     </div>
 
@@ -169,65 +169,62 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        let currentScreen = 'landing';
         let account = { initialBalance: 1000, equity: 1000, highWaterMark: 1000, target: 1100, status: "ACTIVE" };
 
         const user = tg.initDataUnsafe?.user;
         document.getElementById('user-greeting').innerText = user ? `@${user.username || user.first_name}` : "Trader";
 
-        // TELEGRAM BACK BUTTON INTEGRATION
-        tg.BackButton.onClick(() => {
-            if (currentScreen === 'dashboard' || currentScreen === 'payment') {
-                showLanding();
+        // APP INITIALIZATION: Check if session is already paid/active
+        window.onload = function() {
+            const savedSession = localStorage.getItem('moonfund_active_session');
+            if (savedSession) {
+                account = JSON.parse(savedSession);
+                showDashboardUI();
             }
-        });
+        };
 
-        function showLanding() {
-            currentScreen = 'landing';
-            document.getElementById('dashboard-view').style.display = 'none';
-            document.getElementById('paymentModal').style.display = 'none';
-            document.getElementById('landing-view').style.display = 'block';
-            tg.BackButton.hide();
+        function resetDexList() {
+            document.getElementById('dex-iframe').src = "https://dexscreener.com/solana?embed=1&theme=dark&trades=0&info=0";
         }
 
         function launchDashboard(creditAmount) {
-            currentScreen = 'dashboard';
             account.initialBalance = creditAmount;
             account.equity = creditAmount;
             account.highWaterMark = creditAmount;
             account.target = creditAmount * 1.10;
             account.status = "ACTIVE";
 
+            // Save Active Paid State
+            localStorage.setItem('moonfund_active_session', JSON.stringify(account));
+            showDashboardUI();
+        }
+
+        function showDashboardUI() {
             document.getElementById('landing-view').style.display = 'none';
             document.getElementById('dashboard-view').style.display = 'block';
             
-            // Push browser history state for hardware Back Button
-            window.history.pushState({ page: 'dashboard' }, 'Dashboard');
-            tg.BackButton.show();
-            
+            // Hide Telegram native BackButton so paid users don't exit to landing
+            tg.BackButton.hide();
             updateDashboardUI();
         }
-
-        // Handle Browser/Device Back Button Push
-        window.onpopstate = function(event) {
-            if (currentScreen !== 'landing') {
-                showLanding();
-            }
-        };
 
         function updateDashboardUI() {
             const stopLimit = account.highWaterMark * 0.90;
             document.getElementById('val-equity').innerText = `$${account.equity.toFixed(2)}`;
-            document.getElementById('val-peak').innerText = `$${account.highWaterMark.toFixed(2)}`;
             document.getElementById('val-stop').innerText = `$${stopLimit.toFixed(2)}`;
             document.getElementById('val-target').innerText = `$${account.target.toFixed(2)}`;
 
+            // Persist state updates
+            localStorage.setItem('moonfund_active_session', JSON.stringify(account));
+
             if (account.equity <= stopLimit) {
                 account.status = "TERMINATED";
-                alert("CRITICAL BREACH: Trailing Drawdown Limit Hit! Account Terminated.");
+                alert("CRITICAL BREACH: Trailing Drawdown Hit! Account Terminated.");
+                localStorage.removeItem('moonfund_active_session');
+                location.reload();
             } else if (account.equity >= account.target) {
                 account.status = "PASSED";
-                alert("CONGRATULATIONS! Profit Target Reached.");
+                alert("CONGRATULATIONS! Target Passed.");
             }
         }
 
@@ -249,7 +246,9 @@
             updateDashboardUI();
         }
 
-        function closePayment() { showLanding(); }
+        function openPayment(pkg, fee, credit) {
+            launchDashboard(credit); // Automated activation for testing session flow
+        }
     </script>
 </body>
 </html>

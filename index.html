@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MoonFund Mini App</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- Solana Web3 & QR Code Libraries -->
     <script src="https://unpkg.com/@solana/web3.js@latest/lib/index.iife.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
@@ -123,7 +122,8 @@
         <div class="rules">
             • Profit Target: <span>$100 (10%)</span><br>
             • Daily Drawdown: <span>$50 (5%)</span><br>
-            • Max Drawdown: <span>$100 (10%)</span>
+            • Trailing Drawdown: <span>10% from Peak</span><br>
+            • Execution Penalty: <span>5% Hard Slippage</span>
         </div>
         <button class="btn" onclick="openPayment('Micro Mooner', 15)">Buy $1,000 Challenge</button>
     </div>
@@ -136,7 +136,8 @@
         <div class="rules">
             • Profit Target: <span>$500 (10%)</span><br>
             • Daily Drawdown: <span>$250 (5%)</span><br>
-            • Max Drawdown: <span>$500 (10%)</span>
+            • Trailing Drawdown: <span>10% from Peak</span><br>
+            • Execution Penalty: <span>5% Hard Slippage</span>
         </div>
         <button class="btn" onclick="openPayment('Degen Trader', 45)">Buy $5,000 Challenge</button>
     </div>
@@ -149,7 +150,8 @@
         <div class="rules">
             • Profit Target: <span>$1,000 (10%)</span><br>
             • Daily Drawdown: <span>$500 (5%)</span><br>
-            • Max Drawdown: <span>$1,000 (10%)</span>
+            • Trailing Drawdown: <span>10% from Peak</span><br>
+            • Execution Penalty: <span>5% Hard Slippage</span>
         </div>
         <button class="btn" onclick="openPayment('Whale Fund', 85)">Buy $10,000 Challenge</button>
     </div>
@@ -173,7 +175,6 @@
         const tg = window.Telegram.WebApp;
         tg.expand();
 
-        // Phantom Wallet Address
         const RECEIVER_WALLET = "5QykrTKfemyAPu5FgX6YubF6XnFH2mHJFg1othqvrXs2"; 
         let solPriceUsd = 0;
         let checkInterval = null;
@@ -202,13 +203,9 @@
             const solAmount = solPriceUsd > 0 ? (usdPrice / solPriceUsd).toFixed(4) : "0.1";
             document.getElementById('modalTitle').innerText = `Pay ${solAmount} SOL`;
             
-            // Generate Random Reference Key for Tracking
             const reference = solanaWeb3.Keypair.generate().publicKey;
-
-            // Solana Pay Link
             const solanaPayUrl = `solana:${RECEIVER_WALLET}?amount=${solAmount}&reference=${reference.toBase58()}&label=MoonFund%20Evaluation`;
 
-            // Clear old QR and Draw New QR Code
             document.getElementById("qrcode").innerHTML = "";
             new QRCode(document.getElementById("qrcode"), {
                 text: solanaPayUrl,
@@ -221,7 +218,6 @@
             document.getElementById('statusBox').innerText = "⏳ Waiting for payment on Solana...";
             document.getElementById('statusBox').style.color = "#fbbf24";
 
-            // Start Auto-Listening for Transaction
             startPaymentListener(reference);
         }
 
@@ -252,6 +248,29 @@
         function closePayment() {
             if(checkInterval) clearInterval(checkInterval);
             document.getElementById('paymentModal').style.display = 'none';
+        }
+
+        // --- STRICT PROP FIRM RISK ENGINE LOGIC ---
+        const HARD_SLIPPAGE_PENALTY = 0.05; // 5% forced loss on every trade fill
+
+        function executeVirtualTrade(orderType, price, amount, userAccount) {
+            // Apply 5% Slippage Penalty on entry
+            let fillPrice = orderType === 'BUY' ? price * (1 + HARD_SLIPPAGE_PENALTY) : price * (1 - HARD_SLIPPAGE_PENALTY);
+            
+            // Trailing Drawdown Engine Logic
+            if (userAccount.currentBalance > userAccount.highWaterMark) {
+                userAccount.highWaterMark = userAccount.currentBalance; // Update peak
+            }
+
+            let currentTrailingMaxLossLimit = userAccount.highWaterMark * 0.90; // Hard limit at 10% below PEAK balance
+
+            if (userAccount.currentBalance <= currentTrailingMaxLossLimit) {
+                userAccount.isFailed = true;
+                userAccount.status = "TERMINATED_TRAILING_DRAWDOWN_BREACH";
+                alert("CRITICAL: Account Terminated! Trailing Drawdown Breached.");
+                return false;
+            }
+            return { fillPrice, currentTrailingMaxLossLimit };
         }
     </script>
 </body>

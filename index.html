@@ -105,55 +105,105 @@
             cursor: pointer;
             font-weight: bold;
         }
+        /* Dashboard Styles */
+        #dashboard-view { display: none; }
+        .stat-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; }
+        .stat-box { background: #0f172a; padding: 10px; border-radius: 8px; border: 1px solid #334155; }
+        .stat-label { font-size: 11px; color: #94a3b8; }
+        .stat-value { font-size: 16px; font-weight: bold; color: #38bdf8; margin-top: 4px; }
+        .danger-val { color: #ef4444; }
+        .trade-btn { background: #3b82f6; color: white; border: none; padding: 10px; border-radius: 6px; font-weight: bold; width: 48%; }
+        .sell-btn { background: #ef4444; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h1>🚀 MoonFund Evaluation</h1>
-        <div class="user-greeting" id="user-greeting">Loading...</div>
+    <!-- SECTION 1: PACKAGES LANDING -->
+    <div id="landing-view">
+        <div class="header">
+            <h1>🚀 MoonFund Evaluation</h1>
+            <div class="user-greeting" id="user-greeting">Loading...</div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Micro Mooner ($1,000)</span>
+                <span class="card-price">$15</span>
+            </div>
+            <div class="rules">
+                • Profit Target: <span>$100 (10%)</span><br>
+                • Daily Drawdown: <span>$50 (5%)</span><br>
+                • Trailing Drawdown: <span>10% from Peak</span><br>
+                • Execution Penalty: <span>5% Hard Slippage</span>
+            </div>
+            <button class="btn" onclick="openPayment('Micro Mooner', 15, 1000)">Buy $1,000 Challenge</button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Degen Trader ($5,000)</span>
+                <span class="card-price">$45</span>
+            </div>
+            <div class="rules">
+                • Profit Target: <span>$500 (10%)</span><br>
+                • Daily Drawdown: <span>$250 (5%)</span><br>
+                • Trailing Drawdown: <span>10% from Peak</span><br>
+                • Execution Penalty: <span>5% Hard Slippage</span>
+            </div>
+            <button class="btn" onclick="openPayment('Degen Trader', 45, 5000)">Buy $5,000 Challenge</button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Whale Fund ($10,000)</span>
+                <span class="card-price">$85</span>
+            </div>
+            <div class="rules">
+                • Profit Target: <span>$1,000 (10%)</span><br>
+                • Daily Drawdown: <span>$500 (5%)</span><br>
+                • Trailing Drawdown: <span>10% from Peak</span><br>
+                • Execution Penalty: <span>5% Hard Slippage</span>
+            </div>
+            <button class="btn" onclick="openPayment('Whale Fund', 85, 10000)">Buy $10,000 Challenge</button>
+        </div>
     </div>
 
-    <div class="card">
-        <div class="card-header">
-            <span class="card-title">Micro Mooner ($1,000)</span>
-            <span class="card-price">$15</span>
+    <!-- SECTION 2: LIVE TRADING DASHBOARD -->
+    <div id="dashboard-view">
+        <div class="header">
+            <h1>📊 Evaluation Terminal</h1>
+            <div class="user-greeting" id="dash-status" style="background: rgba(16, 185, 129, 0.2); color: #10b981;">STATUS: ACTIVE</div>
         </div>
-        <div class="rules">
-            • Profit Target: <span>$100 (10%)</span><br>
-            • Daily Drawdown: <span>$50 (5%)</span><br>
-            • Trailing Drawdown: <span>10% from Peak</span><br>
-            • Execution Penalty: <span>5% Hard Slippage</span>
-        </div>
-        <button class="btn" onclick="openPayment('Micro Mooner', 15)">Buy $1,000 Challenge</button>
-    </div>
 
-    <div class="card">
-        <div class="card-header">
-            <span class="card-title">Degen Trader ($5,000)</span>
-            <span class="card-price">$45</span>
+        <div class="card">
+            <div class="stat-grid">
+                <div class="stat-box">
+                    <div class="stat-label">Current Equity</div>
+                    <div class="stat-value" id="val-equity">$1,000.00</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">High-Water Mark</div>
+                    <div class="stat-value" id="val-peak">$1,000.00</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Hard Stop Limit</div>
+                    <div class="stat-value danger-val" id="val-stop">$900.00</div>
+                </div>
+                <div class="stat-box">
+                    <div class="stat-label">Profit Target</div>
+                    <div class="stat-value" style="color: #10b981;" id="val-target">$1,100.00</div>
+                </div>
+            </div>
+            <p style="font-size: 11px; color: #94a3b8; text-align: center; margin: 0;">⚡ 5% Hard Slippage Active On All Executions</p>
         </div>
-        <div class="rules">
-            • Profit Target: <span>$500 (10%)</span><br>
-            • Daily Drawdown: <span>$250 (5%)</span><br>
-            • Trailing Drawdown: <span>10% from Peak</span><br>
-            • Execution Penalty: <span>5% Hard Slippage</span>
-        </div>
-        <button class="btn" onclick="openPayment('Degen Trader', 45)">Buy $5,000 Challenge</button>
-    </div>
 
-    <div class="card">
-        <div class="card-header">
-            <span class="card-title">Whale Fund ($10,000)</span>
-            <span class="card-price">$85</span>
+        <div class="card">
+            <div class="card-title" style="margin-bottom: 10px; font-size: 15px;">Simulated Execution Panel</div>
+            <div style="display: flex; justify-content: space-between;">
+                <button class="trade-btn" onclick="processSimulatedTrade('BUY')">BUY SOL (5% Penalty)</button>
+                <button class="trade-btn sell-btn" onclick="processSimulatedTrade('SELL')">SELL SOL (5% Penalty)</button>
+            </div>
         </div>
-        <div class="rules">
-            • Profit Target: <span>$1,000 (10%)</span><br>
-            • Daily Drawdown: <span>$500 (5%)</span><br>
-            • Trailing Drawdown: <span>10% from Peak</span><br>
-            • Execution Penalty: <span>5% Hard Slippage</span>
-        </div>
-        <button class="btn" onclick="openPayment('Whale Fund', 85)">Buy $10,000 Challenge</button>
     </div>
 
     <!-- Solana Pay Modal -->
@@ -178,6 +228,15 @@
         const RECEIVER_WALLET = "5QykrTKfemyAPu5FgX6YubF6XnFH2mHJFg1othqvrXs2"; 
         let solPriceUsd = 0;
         let checkInterval = null;
+        
+        // Active Account Object
+        let account = {
+            initialBalance: 1000,
+            equity: 1000,
+            highWaterMark: 1000,
+            target: 1100,
+            status: "ACTIVE"
+        };
 
         async function fetchSolPrice() {
             try {
@@ -197,7 +256,12 @@
             document.getElementById('user-greeting').innerText = "Trader";
         }
 
-        async function openPayment(name, usdPrice) {
+        async function openPayment(name, usdPrice, challengeCredit) {
+            account.initialBalance = challengeCredit;
+            account.equity = challengeCredit;
+            account.highWaterMark = challengeCredit;
+            account.target = challengeCredit * 1.10;
+
             if (!solPriceUsd) await fetchSolPrice();
             
             const solAmount = solPriceUsd > 0 ? (usdPrice / solPriceUsd).toFixed(4) : "0.1";
@@ -235,9 +299,9 @@
                         document.getElementById('statusBox').style.color = "#10b981";
                         
                         setTimeout(() => {
-                            alert("Payment Successful! Your Evaluation Account is Activated.");
                             closePayment();
-                        }, 2000);
+                            launchDashboard();
+                        }, 1500);
                     }
                 } catch (e) {
                     console.log("Checking tx...", e);
@@ -250,27 +314,54 @@
             document.getElementById('paymentModal').style.display = 'none';
         }
 
-        // --- STRICT PROP FIRM RISK ENGINE LOGIC ---
-        const HARD_SLIPPAGE_PENALTY = 0.05; // 5% forced loss on every trade fill
+        function launchDashboard() {
+            document.getElementById('landing-view').style.display = 'none';
+            document.getElementById('dashboard-view').style.display = 'block';
+            updateDashboardUI();
+        }
 
-        function executeVirtualTrade(orderType, price, amount, userAccount) {
-            // Apply 5% Slippage Penalty on entry
-            let fillPrice = orderType === 'BUY' ? price * (1 + HARD_SLIPPAGE_PENALTY) : price * (1 - HARD_SLIPPAGE_PENALTY);
-            
-            // Trailing Drawdown Engine Logic
-            if (userAccount.currentBalance > userAccount.highWaterMark) {
-                userAccount.highWaterMark = userAccount.currentBalance; // Update peak
-            }
+        function updateDashboardUI() {
+            const stopLimit = account.highWaterMark * 0.90;
+            document.getElementById('val-equity').innerText = `$${account.equity.toFixed(2)}`;
+            document.getElementById('val-peak').innerText = `$${account.highWaterMark.toFixed(2)}`;
+            document.getElementById('val-stop').innerText = `$${stopLimit.toFixed(2)}`;
+            document.getElementById('val-target').innerText = `$${account.target.toFixed(2)}`;
 
-            let currentTrailingMaxLossLimit = userAccount.highWaterMark * 0.90; // Hard limit at 10% below PEAK balance
-
-            if (userAccount.currentBalance <= currentTrailingMaxLossLimit) {
-                userAccount.isFailed = true;
-                userAccount.status = "TERMINATED_TRAILING_DRAWDOWN_BREACH";
+            if (account.equity <= stopLimit) {
+                account.status = "TERMINATED";
+                document.getElementById('dash-status').innerText = "STATUS: TERMINATED (BREACHED)";
+                document.getElementById('dash-status').style.background = "rgba(239, 68, 68, 0.2)";
+                document.getElementById('dash-status').style.color = "#ef4444";
                 alert("CRITICAL: Account Terminated! Trailing Drawdown Breached.");
-                return false;
+            } else if (account.equity >= account.target) {
+                account.status = "PASSED";
+                document.getElementById('dash-status').innerText = "STATUS: PASSED 🎉";
+                alert("CONGRATULATIONS! You passed the evaluation target.");
             }
-            return { fillPrice, currentTrailingMaxLossLimit };
+        }
+
+        // --- STRICT SIMULATED EXECUTION ENGINE ---
+        function processSimulatedTrade(type) {
+            if (account.status !== "ACTIVE") {
+                alert("Account is not active.");
+                return;
+            }
+
+            // Simulate market move (-8% to +10%)
+            let rawOutcomePercent = (Math.random() * 0.18) - 0.08; 
+            
+            // Deduct 5% Slippage Penalty hard on each execution
+            let netOutcomePercent = rawOutcomePercent - 0.05; 
+
+            let delta = account.equity * netOutcomePercent;
+            account.equity += delta;
+
+            // Update High-Water Mark if new peak hit
+            if (account.equity > account.highWaterMark) {
+                account.highWaterMark = account.equity;
+            }
+
+            updateDashboardUI();
         }
     </script>
 </body>

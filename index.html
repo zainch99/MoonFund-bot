@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MoonFund Evaluation Terminal</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- QRCode.js CDN for dynamic QR code generation -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
     
     <style>
         * { box-sizing: border-box; }
@@ -53,6 +55,85 @@
         .rules { font-size: 10px; color: #94a3b8; line-height: 1.3; margin-bottom: 6px; }
         .rules span { color: #e2e8f0; font-weight: 600; }
         .btn { background-color: #10b981; color: #000; border: none; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; width: 100%; }
+
+        /* MODAL OVERLAY & CONTENT */
+        .modal-overlay {
+            position: fixed;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0, 0, 0, 0.88);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 999;
+            padding: 12px;
+        }
+        .modal-content {
+            background: #151c2c;
+            border: 1px solid #38bdf8;
+            border-radius: 12px;
+            padding: 14px;
+            width: 100%;
+            max-width: 340px;
+            text-align: center;
+            box-shadow: 0px 4px 20px rgba(56, 189, 248, 0.2);
+        }
+        .modal-title { font-size: 15px; font-weight: bold; color: #38bdf8; margin-bottom: 2px; }
+        .pay-amount { font-size: 18px; font-weight: bold; color: #10b981; margin-bottom: 8px; }
+        
+        /* QR CODE CONTAINER */
+        .qr-box {
+            background: #ffffff;
+            padding: 8px;
+            border-radius: 8px;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+        #qrcode img { display: block; margin: 0 auto; }
+
+        .address-box {
+            background: #0b0f19;
+            border: 1px solid #243049;
+            border-radius: 6px;
+            padding: 6px;
+            font-size: 10px;
+            color: #38bdf8;
+            font-family: monospace;
+            word-break: break-all;
+            margin-bottom: 6px;
+        }
+        .copy-btn {
+            background: #243049;
+            color: #f8fafc;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+            margin-bottom: 10px;
+        }
+        .pay-confirm-btn {
+            background: #10b981;
+            color: #000;
+            border: none;
+            padding: 10px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 12px;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 6px;
+        }
+        .close-modal-btn {
+            background: transparent;
+            color: #94a3b8;
+            border: 1px solid #243049;
+            padding: 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            cursor: pointer;
+            width: 100%;
+        }
 
         /* COMPACT LIVE STATS HEADER */
         .compact-stats-bar {
@@ -149,14 +230,34 @@
 </head>
 <body>
 
+    <!-- MANUAL SOLANA PAYMENT MODAL -->
+    <div class="modal-overlay" id="payment-modal">
+        <div class="modal-content">
+            <div class="modal-title" id="modal-pkg-name">Evaluation Fee</div>
+            <div class="pay-amount" id="modal-pkg-price">$15 SOL</div>
+
+            <div class="qr-box">
+                <div id="qrcode"></div>
+            </div>
+
+            <div class="address-box" id="wallet-address-display">YOUR_SOLANA_WALLET_ADDRESS_HERE</div>
+            <button class="copy-btn" onclick="copyWalletAddress()">📋 Copy Solana Address</button>
+
+            <button class="pay-confirm-btn" onclick="confirmPaymentAndUnlock()">I Have Paid</button>
+            <button class="close-modal-btn" onclick="closePaymentModal()">Cancel</button>
+        </div>
+    </div>
+
+    <!-- SECTION 1: 5 PACKAGES LANDING VIEW -->
     <div id="landing-view">
         <div class="header">
             <h1>🚀 MoonFund Evaluation</h1>
             <div class="user-greeting" id="user-greeting">Trader</div>
         </div>
 
-        <button class="test-bypass-btn" onclick="launchDashboard(1000)">⚡ Test Bypass (Activate $1,000)</button>
+        <button class="test-bypass-btn" onclick="launchDashboard(1000)">⚡ Test Bypass (Dev Only)</button>
 
+        <!-- PACKAGE 1 -->
         <div class="card">
             <div class="card-header">
                 <span class="card-title">Micro Mooner ($1,000)</span>
@@ -165,9 +266,10 @@
             <div class="rules">
                 • Target: <span>$100 (10%)</span> | Max Loss: <span>5% ($950 Stop)</span>
             </div>
-            <button class="btn" onclick="launchDashboard(1000)">Buy $1,000 Challenge</button>
+            <button class="btn" onclick="openPaymentGateway('Micro Mooner ($1,000)', 15, 1000)">Buy $1,000 Challenge ($15)</button>
         </div>
 
+        <!-- PACKAGE 2 -->
         <div class="card">
             <div class="card-header">
                 <span class="card-title">Mini Trader ($2,500)</span>
@@ -176,9 +278,10 @@
             <div class="rules">
                 • Target: <span>$250 (10%)</span> | Max Loss: <span>5% ($2,375 Stop)</span>
             </div>
-            <button class="btn" onclick="launchDashboard(2500)">Buy $2,500 Challenge</button>
+            <button class="btn" onclick="openPaymentGateway('Mini Trader ($2,500)', 35, 2500)">Buy $2,500 Challenge ($35)</button>
         </div>
 
+        <!-- PACKAGE 3 -->
         <div class="card">
             <div class="card-header">
                 <span class="card-title">Pro Fund ($5,000)</span>
@@ -187,9 +290,10 @@
             <div class="rules">
                 • Target: <span>$500 (10%)</span> | Max Loss: <span>5% ($4,750 Stop)</span>
             </div>
-            <button class="btn" onclick="launchDashboard(5000)">Buy $5,000 Challenge</button>
+            <button class="btn" onclick="openPaymentGateway('Pro Fund ($5,000)', 65, 5000)">Buy $5,000 Challenge ($65)</button>
         </div>
 
+        <!-- PACKAGE 4 -->
         <div class="card">
             <div class="card-header">
                 <span class="card-title">Whale Scalper ($10,000)</span>
@@ -198,9 +302,10 @@
             <div class="rules">
                 • Target: <span>$1,000 (10%)</span> | Max Loss: <span>5% ($9,500 Stop)</span>
             </div>
-            <button class="btn" onclick="launchDashboard(10000)">Buy $10,000 Challenge</button>
+            <button class="btn" onclick="openPaymentGateway('Whale Scalper ($10,000)', 120, 10000)">Buy $10,000 Challenge ($120)</button>
         </div>
 
+        <!-- PACKAGE 5 -->
         <div class="card">
             <div class="card-header">
                 <span class="card-title">Moon Apex ($25,000)</span>
@@ -209,12 +314,12 @@
             <div class="rules">
                 • Target: <span>$2,500 (10%)</span> | Max Loss: <span>5% ($23,750 Stop)</span>
             </div>
-            <button class="btn" onclick="launchDashboard(25000)">Buy $25,000 Challenge</button>
+            <button class="btn" onclick="openPaymentGateway('Moon Apex ($25,000)', 250, 25000)">Buy $25,000 Challenge ($250)</button>
         </div>
     </div>
 
+    <!-- SECTION 2: TERMINAL -->
     <div id="dashboard-view" style="display:none;">
-        
         <div class="compact-stats-bar">
             <button class="reload-chart-btn" onclick="goBackOrResetDex()">← Tokens</button>
             <div class="stat-item">
@@ -251,6 +356,8 @@
     </div>
 
     <script>
+        // CONFIGURATION
+        const RECEIVING_SOLANA_ADDRESS = "YOUR_SOLANA_WALLET_ADDRESS_HERE";
         const DEFAULT_DEX_URL = "https://dexscreener.com/solana?embed=1&theme=dark&trades=0&info=0";
         const tg = window.Telegram?.WebApp;
         if (tg) tg.expand();
@@ -265,8 +372,13 @@
 
         let activePosition = null; 
         let priceEngineTimer = null;
+        let selectedChallengeCredit = 1000;
+        let qrCodeObj = null;
 
         window.onload = function() {
+            // Display wallet address
+            document.getElementById('wallet-address-display').innerText = RECEIVING_SOLANA_ADDRESS;
+
             if (tg && tg.initDataUnsafe?.user) {
                 const u = tg.initDataUnsafe.user;
                 document.getElementById('user-greeting').innerText = `@${u.username || u.first_name}`;
@@ -282,6 +394,44 @@
                 }
             }
         };
+
+        function openPaymentGateway(pkgName, feeUsd, accountCredit) {
+            selectedChallengeCredit = accountCredit;
+            document.getElementById('modal-pkg-name').innerText = pkgName;
+            document.getElementById('modal-pkg-price').innerText = `Fee: $${feeUsd} SOL`;
+            document.getElementById('payment-modal').style.display = 'flex';
+
+            // Generate or update QR code
+            const qrContainer = document.getElementById('qrcode');
+            qrContainer.innerHTML = ''; 
+            
+            // Generate QR linking to solana protocol address
+            qrCodeObj = new QRCode(qrContainer, {
+                text: `solana:${RECEIVING_SOLANA_ADDRESS}`,
+                width: 120,
+                height: 120,
+                colorDark: "#000000",
+                colorLight: "#ffffff",
+                correctLevel: QRCode.CorrectLevel.H
+            });
+        }
+
+        function copyWalletAddress() {
+            navigator.clipboard.writeText(RECEIVING_SOLANA_ADDRESS).then(() => {
+                alert("Solana address copied to clipboard!");
+            }).catch(err => {
+                console.error("Copy failed", err);
+            });
+        }
+
+        function closePaymentModal() {
+            document.getElementById('payment-modal').style.display = 'none';
+        }
+
+        function confirmPaymentAndUnlock() {
+            closePaymentModal();
+            launchDashboard(selectedChallengeCredit);
+        }
 
         function resetDexList() {
             document.getElementById('dex-iframe').src = DEFAULT_DEX_URL;
@@ -306,8 +456,8 @@
             account = {
                 balance: creditAmount,
                 equity: creditAmount,
-                target: creditAmount * 1.10, // 10% Target
-                hardStop: creditAmount * 0.95, // 5% Hard Stop
+                target: creditAmount * 1.10,
+                hardStop: creditAmount * 0.95,
                 status: "ACTIVE"
             };
 
@@ -342,21 +492,16 @@
             }
         }
 
-        // Live Dynamic Tick Engine (Scales position size proportionally to package account size)
         function startPriceEngine() {
             if (priceEngineTimer) clearInterval(priceEngineTimer);
 
             priceEngineTimer = setInterval(() => {
                 if (!activePosition || account.status !== "ACTIVE") return;
 
-                // Position exposure = 20% of initial account balance
                 const positionSizeUsd = account.balance * 0.20;
-
-                // Micro Volatility Movement (0.3% range)
                 const movePercent = (Math.random() - 0.49) * 0.006;
                 activePosition.currentPrice = activePosition.currentPrice * (1 + movePercent);
 
-                // Calculate Floating PnL based on position direction
                 const priceRatio = activePosition.currentPrice / activePosition.entryPrice;
                 if (activePosition.type === 'BUY') {
                     activePosition.pnl = (priceRatio - 1) * positionSizeUsd;
@@ -364,7 +509,6 @@
                     activePosition.pnl = (1 - priceRatio) * positionSizeUsd;
                 }
 
-                // Floating Equity = Balance + Position PnL
                 account.equity = +(account.balance + activePosition.pnl).toFixed(2);
                 
                 checkRules();
@@ -395,7 +539,6 @@
         function closePosition() {
             if (!activePosition) return;
 
-            // Finalize PnL into main balance
             account.balance = account.equity;
             const finalPnl = activePosition.pnl;
             activePosition = null;

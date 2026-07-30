@@ -93,11 +93,24 @@
             color: #38bdf8;
         }
 
-        /* DEX CONTAINER (Hides "Tracked by DexScreener") */
+        /* POSITION CARD */
+        .position-card {
+            background: #151c2c;
+            border: 1px dashed #243049;
+            border-radius: 6px;
+            padding: 6px 10px;
+            margin-bottom: 6px;
+            font-size: 11px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        /* DEX CONTAINER */
         .dex-frame-container {
             width: 100%;
-            height: calc(100vh - 170px);
-            min-height: 380px;
+            height: calc(100vh - 210px);
+            min-height: 350px;
             background: #000;
             border-radius: 8px;
             overflow: hidden;
@@ -107,7 +120,7 @@
         }
         iframe {
             width: 100%;
-            height: calc(100% + 38px); /* Hides bottom attribution bar */
+            height: calc(100% + 38px);
             border: none;
         }
 
@@ -118,16 +131,20 @@
         }
         .action-btn { 
             border: none; 
-            padding: 14px; 
+            padding: 12px; 
             border-radius: 6px; 
             font-weight: bold; 
             cursor: pointer; 
-            font-size: 14px; 
+            font-size: 13px; 
             width: 100%;
         }
         .buy-style { background: #10b981; color: #000; }
         .sell-style { background: #ef4444; color: #fff; }
+        .close-style { background: #f59e0b; color: #000; grid-column: span 2; display: none; }
         .reset-btn { background: #f59e0b; color: #000; margin-top: 6px; display: none; }
+
+        .pnl-green { color: #10b981; }
+        .pnl-red { color: #ef4444; }
     </style>
 </head>
 <body>
@@ -148,7 +165,7 @@
             </div>
             <div class="rules">
                 • Target: <span>$100 (10%)</span> | Max Loss: <span>5% ($950 Stop)</span><br>
-                • Rules: <span>Realistic Trend Engine</span>
+                • Rules: <span>Position-Based Execution Engine</span>
             </div>
             <button class="btn" onclick="launchDashboard(1000)">Buy $1,000 Challenge</button>
         </div>
@@ -173,32 +190,41 @@
             </div>
         </div>
 
-        <div class="trade-status-banner" id="status-banner">Ready to Trade</div>
+        <div class="trade-status-banner" id="status-banner">Ready to Open Position</div>
+
+        <div class="position-card" id="pos-info-card">
+            <span>Pos: <strong id="pos-type-lbl" style="color: #94a3b8;">NONE ($200 Size)</strong></span>
+            <span>Floating PnL: <strong id="pos-pnl-lbl">$0.00</strong></span>
+        </div>
 
         <div class="dex-frame-container">
             <iframe id="dex-iframe" src="https://dexscreener.com/solana?embed=1&theme=dark&trades=0&info=0"></iframe>
         </div>
 
-        <div class="trade-grid">
-            <button class="action-btn buy-style" id="btn-buy" onclick="processTrade('BUY')">BUY (LONG)</button>
-            <button class="action-btn sell-style" id="btn-sell" onclick="processTrade('SELL')">SELL (SHORT)</button>
+        <div class="trade-grid" id="controls-grid">
+            <button class="action-btn buy-style" id="btn-buy" onclick="openPosition('BUY')">BUY (LONG)</button>
+            <button class="action-btn sell-style" id="btn-sell" onclick="openPosition('SELL')">SELL (SHORT)</button>
+            <button class="action-btn close-style" id="btn-close" onclick="closePosition()">CLOSE ACTIVE POSITION</button>
         </div>
         <button class="action-btn reset-btn" id="btn-reset-session" onclick="forceResetSession()">🔄 Reset Test Account</button>
     </div>
 
     <script>
         const DEFAULT_DEX_URL = "https://dexscreener.com/solana?embed=1&theme=dark&trades=0&info=0";
+        const POSITION_SIZE_USD = 200.00; // Fixed $200 position exposure per trade
         const tg = window.Telegram?.WebApp;
         if (tg) tg.expand();
 
         let account = { 
-            initialBalance: 1000, 
+            balance: 1000,
             equity: 1000, 
             target: 1100, 
             hardStop: 950, 
-            status: "ACTIVE",
-            currentTrend: 1
+            status: "ACTIVE"
         };
+
+        let activePosition = null; // { type: 'BUY'|'SELL', entryPrice: number, currentPrice: number, pnl: number }
+        let priceEngineTimer = null;
 
         window.onload = function() {
             if (tg && tg.initDataUnsafe?.user) {
@@ -223,28 +249,26 @@
 
         function goBackOrResetDex() {
             const iframe = document.getElementById('dex-iframe');
-            // If user opened a specific token chart, go back to token list first
             if (iframe.src !== DEFAULT_DEX_URL) {
                 resetDexList();
             } else {
-                // Otherwise go back to landing screen
                 showLandingUI();
             }
         }
 
         function forceResetSession() {
             localStorage.removeItem('moonfund_active_session');
+            if (priceEngineTimer) clearInterval(priceEngineTimer);
             location.reload();
         }
 
         function launchDashboard(creditAmount) {
             account = {
-                initialBalance: creditAmount,
+                balance: creditAmount,
                 equity: creditAmount,
                 target: creditAmount * 1.10,
                 hardStop: creditAmount * 0.95,
-                status: "ACTIVE",
-                currentTrend: 1
+                status: "ACTIVE"
             };
 
             localStorage.setItem('moonfund_active_session', JSON.stringify(account));
@@ -256,6 +280,7 @@
             document.getElementById('dashboard-view').style.display = 'block';
             setupBackButton();
             renderStats();
+            startPriceEngine();
         }
 
         function showLandingUI() {
@@ -277,63 +302,128 @@
             }
         }
 
-        function renderStats(pnl = null, type = '') {
+        // Live Dynamic Tick Engine (Simulates token price micro-movements)
+        function startPriceEngine() {
+            if (priceEngineTimer) clearInterval(priceEngineTimer);
+
+            priceEngineTimer = setInterval(() => {
+                if (!activePosition || account.status !== "ACTIVE") return;
+
+                // Micro Volatility Movement (0.3% range)
+                const movePercent = (Math.random() - 0.49) * 0.006;
+                activePosition.currentPrice = activePosition.currentPrice * (1 + movePercent);
+
+                // Calculate Floating PnL based on position direction
+                const priceRatio = activePosition.currentPrice / activePosition.entryPrice;
+                if (activePosition.type === 'BUY') {
+                    activePosition.pnl = (priceRatio - 1) * POSITION_SIZE_USD;
+                } else {
+                    activePosition.pnl = (1 - priceRatio) * POSITION_SIZE_USD;
+                }
+
+                // Floating Equity = Balance + Position PnL
+                account.equity = +(account.balance + activePosition.pnl).toFixed(2);
+                
+                checkRules();
+                renderStats();
+            }, 400);
+        }
+
+        function openPosition(type) {
+            if (account.status !== "ACTIVE" || activePosition) return;
+
+            const basePrice = 0.0500; // Reference base price
+            activePosition = {
+                type: type,
+                entryPrice: basePrice,
+                currentPrice: basePrice,
+                pnl: 0.00
+            };
+
+            document.getElementById('btn-buy').style.display = 'none';
+            document.getElementById('btn-sell').style.display = 'none';
+            document.getElementById('btn-close').style.display = 'block';
+
+            document.getElementById('status-banner').innerText = `ACTIVE ${type} POSITION OPEN ($200 Exposure)`;
+            document.getElementById('status-banner').style.color = '#38bdf8';
+            renderStats();
+        }
+
+        function closePosition() {
+            if (!activePosition) return;
+
+            // Finalize PnL into main balance
+            account.balance = account.equity;
+            const finalPnl = activePosition.pnl;
+            activePosition = null;
+
+            document.getElementById('btn-buy').style.display = 'block';
+            document.getElementById('btn-sell').style.display = 'block';
+            document.getElementById('btn-close').style.display = 'none';
+
+            const isWin = finalPnl >= 0;
+            const banner = document.getElementById('status-banner');
+            banner.innerText = `CLOSED POSITION: ${isWin ? '+' : ''}$${finalPnl.toFixed(2)}`;
+            banner.style.color = isWin ? '#10b981' : '#ef4444';
+
+            checkRules();
+            renderStats();
+        }
+
+        function checkRules() {
+            if (account.equity <= account.hardStop) {
+                account.status = "TERMINATED";
+            } else if (account.equity >= account.target) {
+                account.status = "PASSED";
+            }
+        }
+
+        function renderStats() {
             const equityEl = document.getElementById('val-equity');
             equityEl.innerText = `$${account.equity.toFixed(2)}`;
             document.getElementById('val-stop').innerText = `$${account.hardStop.toFixed(2)}`;
             document.getElementById('val-target').innerText = `$${account.target.toFixed(2)}`;
 
-            const banner = document.getElementById('status-banner');
+            const posTypeLbl = document.getElementById('pos-type-lbl');
+            const posPnlLbl = document.getElementById('pos-pnl-lbl');
             const resetBtn = document.getElementById('btn-reset-session');
 
-            if (pnl !== null) {
-                const isWin = pnl >= 0;
-                banner.innerText = `${type} ORDER: ${isWin ? '+' : ''}$${pnl.toFixed(2)}`;
-                banner.style.color = isWin ? '#10b981' : '#ef4444';
+            if (activePosition) {
+                posTypeLbl.innerText = `${activePosition.type} (ACTIVE)`;
+                posTypeLbl.style.color = activePosition.type === 'BUY' ? '#10b981' : '#ef4444';
                 
-                equityEl.style.color = isWin ? '#10b981' : '#ef4444';
-                setTimeout(() => { equityEl.style.color = '#38bdf8'; }, 300);
+                const pnlVal = activePosition.pnl;
+                posPnlLbl.innerText = `${pnlVal >= 0 ? '+' : ''}$${pnlVal.toFixed(2)}`;
+                posPnlLbl.className = pnlVal >= 0 ? 'pnl-green' : 'pnl-red';
+            } else {
+                posTypeLbl.innerText = 'NONE ($200 Size)';
+                posTypeLbl.style.color = '#94a3b8';
+                posPnlLbl.innerText = '$0.00';
+                posPnlLbl.className = '';
             }
 
             localStorage.setItem('moonfund_active_session', JSON.stringify(account));
 
-            if (account.equity <= account.hardStop) {
-                account.status = "TERMINATED";
+            const banner = document.getElementById('status-banner');
+            if (account.status === "TERMINATED") {
                 banner.innerText = "🚨 MAX LOSS HIT ($950)! ACCOUNT TERMINATED.";
                 banner.style.color = "#ef4444";
                 resetBtn.style.display = "block";
-            } else if (account.equity >= account.target) {
-                account.status = "PASSED";
+                disableTrading();
+            } else if (account.status === "PASSED") {
                 banner.innerText = "🏆 TARGET REACHED ($1100)! EVALUATION PASSED!";
                 banner.style.color = "#10b981";
                 resetBtn.style.display = "block";
+                disableTrading();
             } else {
                 resetBtn.style.display = "none";
             }
         }
 
-        function processTrade(type) {
-            if (account.status !== "ACTIVE") {
-                forceResetSession();
-                return;
-            }
-
-            // TREND-BASED REALISTIC LOGIC
-            let pnl = 0;
-            let isPositiveTrend = (type === 'BUY');
-
-            if (Math.random() < 0.25) {
-                isPositiveTrend = !isPositiveTrend;
-            }
-
-            if (isPositiveTrend) {
-                pnl = +(Math.random() * 18 + 5).toFixed(2); // Consistent Profit +$5 to +$23
-            } else {
-                pnl = -(Math.random() * 10 + 3).toFixed(2); // Managed Loss -$3 to -$13
-            }
-
-            account.equity = +(account.equity + pnl).toFixed(2);
-            renderStats(pnl, type);
+        function disableTrading() {
+            document.getElementById('btn-buy').disabled = true;
+            document.getElementById('btn-sell').disabled = true;
+            document.getElementById('btn-close').disabled = true;
         }
     </script>
 </body>

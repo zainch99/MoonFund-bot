@@ -1,405 +1,340 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>MoonFund Evaluation</title>
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
-  <style>
-    :root {
-      --bg: #0b0e14;
-      --card-bg: #151a23;
-      --border: #232a36;
-      --text: #e1e7ef;
-      --text-muted: #7b889b;
-      --accent: #6366f1;
-      --green: #10b981;
-      --red: #ef4444;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MoonFund Evaluation Terminal</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #0b0f19;
+            color: #f8fafc;
+            margin: 0;
+            padding: 6px;
+            user-select: none;
+        }
+        .header { text-align: center; margin-bottom: 6px; }
+        .header h1 { color: #38bdf8; font-size: 16px; margin: 0; }
+        .user-greeting {
+            background: rgba(56, 189, 248, 0.1);
+            color: #38bdf8;
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 2px;
+        }
+        .test-bypass-btn {
+            background-color: #f59e0b;
+            color: #000;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            margin-bottom: 12px;
+        }
+        .card {
+            background: #151c2c;
+            border: 1px solid #243049;
+            border-radius: 8px;
+            padding: 8px;
+            margin-bottom: 8px;
+        }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .card-title { font-size: 14px; font-weight: bold; color: #f8fafc; }
+        .card-price { background: #0284c7; color: #fff; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+        .rules { font-size: 11px; color: #94a3b8; line-height: 1.4; margin-bottom: 8px; }
+        .rules span { color: #e2e8f0; font-weight: 600; }
+        .btn { background-color: #10b981; color: #000; border: none; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; width: 100%; }
 
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-      user-select: none;
-    }
+        /* COMPACT LIVE STATS HEADER */
+        .compact-stats-bar {
+            background: #151c2c;
+            border: 1px solid #243049;
+            border-radius: 6px;
+            padding: 6px 8px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            margin-bottom: 4px;
+        }
+        .stat-item { display: flex; flex-direction: column; text-align: center; }
+        .stat-lbl { font-size: 9px; color: #94a3b8; text-transform: uppercase; }
+        .stat-val { font-weight: bold; color: #38bdf8; font-size: 12px; margin-top: 1px; transition: color 0.2s; }
 
-    body {
-      background-color: var(--bg);
-      color: var(--text);
-      display: flex;
-      flex-direction: column;
-      height: 100vh;
-      overflow: hidden;
-    }
+        .reload-chart-btn {
+            background: #38bdf8;
+            color: #000;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
+            cursor: pointer;
+        }
 
-    /* Stats Header */
-    .header-stats {
-      display: grid;
-      grid-template-columns: repeat(3, 1fr);
-      gap: 8px;
-      padding: 12px;
-      background-color: var(--card-bg);
-      border-bottom: 1px solid var(--border);
-    }
+        /* TRADE STATUS BANNER */
+        .trade-status-banner {
+            text-align: center;
+            font-size: 11px;
+            font-weight: bold;
+            padding: 6px;
+            border-radius: 4px;
+            margin-bottom: 6px;
+            background: #1e293b;
+            color: #38bdf8;
+        }
 
-    .stat-card {
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 8px 4px;
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px solid var(--border);
-      border-radius: 8px;
-    }
+        /* DEX CONTAINER (Hides "Tracked by DexScreener") */
+        .dex-frame-container {
+            width: 100%;
+            height: calc(100vh - 170px);
+            min-height: 380px;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #243049;
+            margin-bottom: 6px;
+            position: relative;
+        }
+        iframe {
+            width: 100%;
+            height: calc(100% + 38px); /* Hides bottom attribution bar */
+            border: none;
+        }
 
-    .stat-label {
-      font-size: 10px;
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      color: var(--text-muted);
-      margin-bottom: 4px;
-    }
-
-    .stat-value {
-      font-size: 14px;
-      font-weight: 700;
-    }
-
-    /* Main Container */
-    .main-container {
-      flex: 1;
-      display: flex;
-      flex-direction: column;
-      position: relative;
-      overflow-y: auto;
-    }
-
-    /* DexScreener Chart Frame with Branding Mask */
-    .chart-container {
-      width: 100%;
-      height: 300px;
-      position: relative;
-      border-bottom: 1px solid var(--border);
-      background: #000;
-      overflow: hidden;
-    }
-
-    /* Crop out the bottom 'Tracked by DexScreener' banner */
-    .chart-container iframe {
-      width: 100%;
-      height: 108%;
-      border: 0;
-      margin-top: 0;
-    }
-
-    /* Challenge & Status Card */
-    .challenge-card {
-      margin: 12px;
-      padding: 14px;
-      background: var(--card-bg);
-      border: 1px solid var(--border);
-      border-radius: 12px;
-    }
-
-    .card-title-row {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      margin-bottom: 10px;
-    }
-
-    .card-title {
-      font-size: 14px;
-      font-weight: 600;
-    }
-
-    .status-badge {
-      font-size: 11px;
-      font-weight: 700;
-      padding: 3px 8px;
-      border-radius: 20px;
-      text-transform: uppercase;
-    }
-
-    .badge-active { background: rgba(99, 102, 241, 0.2); color: var(--accent); }
-    .badge-passed { background: rgba(16, 185, 129, 0.2); color: var(--green); }
-    .badge-terminated { background: rgba(239, 68, 68, 0.2); color: var(--red); }
-
-    .progress-bar-bg {
-      width: 100%;
-      height: 6px;
-      background: var(--border);
-      border-radius: 3px;
-      overflow: hidden;
-      margin-top: 8px;
-    }
-
-    .progress-bar-fill {
-      height: 100%;
-      width: 0%;
-      background: var(--accent);
-      transition: width 0.3s ease;
-    }
-
-    /* Active Position Card */
-    .position-card {
-      margin: 0 12px 12px 12px;
-      padding: 12px;
-      background: rgba(255, 255, 255, 0.02);
-      border: 1px dashed var(--border);
-      border-radius: 10px;
-    }
-
-    .pos-row {
-      display: flex;
-      justify-content: space-between;
-      font-size: 12px;
-      margin-bottom: 6px;
-    }
-
-    .pos-row:last-child {
-      margin-bottom: 0;
-    }
-
-    /* Controls Bar */
-    .controls-footer {
-      padding: 12px;
-      background: var(--card-bg);
-      border-top: 1px solid var(--border);
-      display: flex;
-      gap: 10px;
-    }
-
-    .btn {
-      flex: 1;
-      padding: 14px;
-      border: none;
-      border-radius: 10px;
-      font-size: 14px;
-      font-weight: 700;
-      cursor: pointer;
-      transition: opacity 0.2s, transform 0.1s;
-    }
-
-    .btn:active {
-      transform: scale(0.98);
-    }
-
-    .btn:disabled {
-      opacity: 0.4;
-      cursor: not-allowed;
-    }
-
-    .btn-buy { background: var(--green); color: #fff; }
-    .btn-close { background: var(--red); color: #fff; }
-    .btn-reset { background: var(--border); color: var(--text); flex: 0.4; }
-
-    .pnl-positive { color: var(--green); }
-    .pnl-negative { color: var(--red); }
-  </style>
+        .trade-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 6px; 
+        }
+        .action-btn { 
+            border: none; 
+            padding: 14px; 
+            border-radius: 6px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            font-size: 14px; 
+            width: 100%;
+        }
+        .buy-style { background: #10b981; color: #000; }
+        .sell-style { background: #ef4444; color: #fff; }
+        .reset-btn { background: #f59e0b; color: #000; margin-top: 6px; display: none; }
+    </style>
 </head>
 <body>
 
-  <!-- Top Stats Header -->
-  <div class="header-stats">
-    <div class="stat-card">
-      <span class="stat-label">Hard Stop</span>
-      <span class="stat-value" style="color: var(--red);">$950.00</span>
-    </div>
-    <div class="stat-card">
-      <span class="stat-label">Equity</span>
-      <span class="stat-value" id="ui-equity">$1,000.00</span>
-    </div>
-    <div class="stat-card">
-      <span class="stat-label">Target</span>
-      <span class="stat-value" style="color: var(--green);">$1,100.00</span>
-    </div>
-  </div>
+    <!-- SECTION 1: PACKAGES LANDING -->
+    <div id="landing-view">
+        <div class="header">
+            <h1>🚀 MoonFund Evaluation</h1>
+            <div class="user-greeting" id="user-greeting">Trader</div>
+        </div>
 
-  <!-- Main Scrollable Body -->
-  <div class="main-container">
-    <!-- Chart Widget without branding footer -->
-    <div class="chart-container">
-      <iframe src="https://dexscreener.com/solana/4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R?embed=1&theme=dark&trades=0&info=0&chartHeader=0"></iframe>
-    </div>
+        <button class="test-bypass-btn" onclick="launchDashboard(1000)">⚡ Test Bypass (Activate Terminal)</button>
 
-    <!-- Challenge Overview Card -->
-    <div class="challenge-card">
-      <div class="card-title-row">
-        <span class="card-title">$1,000 MoonFund Challenge</span>
-        <span class="status-badge badge-active" id="ui-status">ACTIVE</span>
-      </div>
-      <div class="pos-row">
-        <span style="color: var(--text-muted);">Evaluation Progress</span>
-        <span id="ui-progress-text">0%</span>
-      </div>
-      <div class="progress-bar-bg">
-        <div class="progress-bar-fill" id="ui-progress-bar"></div>
-      </div>
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Micro Mooner ($1,000)</span>
+                <span class="card-price">$15</span>
+            </div>
+            <div class="rules">
+                • Target: <span>$100 (10%)</span> | Max Loss: <span>5% ($950 Stop)</span><br>
+                • Rules: <span>Realistic Trend Engine</span>
+            </div>
+            <button class="btn" onclick="launchDashboard(1000)">Buy $1,000 Challenge</button>
+        </div>
     </div>
 
-    <!-- Active Position Widget -->
-    <div class="position-card" id="ui-pos-card">
-      <div class="pos-row">
-        <span>Token Price: <strong id="ui-token-price">$0.000000</strong></span>
-        <span>Position: <strong id="ui-pos-status" style="color: var(--text-muted);">NONE</strong></span>
-      </div>
-      <div class="pos-row">
-        <span>Entry Price: <span id="ui-pos-entry">-</span></span>
-        <span>Floating PnL: <strong id="ui-pos-pnl">$0.00</strong></span>
-      </div>
-    </div>
-  </div>
-
-  <!-- Execution Controls -->
-  <div class="controls-footer">
-    <button class="btn btn-buy" id="btn-buy" onclick="openPosition()">BUY LONG</button>
-    <button class="btn btn-close" id="btn-close" onclick="closePosition()" disabled>CLOSE POSITION</button>
-    <button class="btn btn-reset" onclick="resetChallenge()">RESET</button>
-  </div>
-
-  <script>
-    const CONFIG = {
-      INITIAL_BALANCE: 1000.00,
-      TARGET_EQUITY: 1100.00,
-      HARD_STOP_EQUITY: 950.00,
-      POSITION_SIZE_USD: 200.00,
-      VOLATILITY: 0.004
-    };
-
-    let state = {
-      balance: CONFIG.INITIAL_BALANCE,
-      equity: CONFIG.INITIAL_BALANCE,
-      status: 'ACTIVE',
-      currentPrice: 0.042000,
-      position: null
-    };
-
-    // Telegram Mini App Integration & Back Button Handling
-    const tg = window.Telegram ? window.Telegram.WebApp : null;
-
-    if (tg) {
-      tg.ready();
-      tg.expand();
-
-      // Show Native Back Button
-      if (tg.BackButton) {
-        tg.BackButton.show();
-        tg.BackButton.onClick(() => {
-          // Navigate back to coins list / previous window instead of exiting app
-          if (window.history.length > 1) {
-            window.history.back();
-          } else {
-            // Fallback: If no browser history exists, redirect to coins selection screen URL
-            window.location.href = "coins.html"; 
-          }
-        });
-      }
-    }
-
-    // Continuous Real-Time Price Engine
-    setInterval(() => {
-      const delta = (Math.random() - 0.495) * CONFIG.VOLATILITY; 
-      state.currentPrice = Math.max(0.000001, state.currentPrice * (1 + delta));
-
-      if (state.position) {
-        const priceRatio = state.currentPrice / state.position.entryPrice;
-        state.position.unrealizedPnL = (priceRatio - 1) * state.position.sizeUsd;
-        state.equity = state.balance + state.position.unrealizedPnL;
-      } else {
-        state.equity = state.balance;
-      }
-
-      checkEvaluationRules();
-      renderUI();
-    }, 300);
-
-    function openPosition() {
-      if (state.status !== 'ACTIVE' || state.position) return;
-      state.position = {
-        entryPrice: state.currentPrice,
-        sizeUsd: CONFIG.POSITION_SIZE_USD,
-        unrealizedPnL: 0
-      };
-      renderUI();
-    }
-
-    function closePosition() {
-      if (!state.position) return;
-      state.balance += state.position.unrealizedPnL;
-      state.equity = state.balance;
-      state.position = null;
-      checkEvaluationRules();
-      renderUI();
-    }
-
-    function checkEvaluationRules() {
-      if (state.status !== 'ACTIVE') return;
-
-      if (state.equity >= CONFIG.TARGET_EQUITY) {
-        state.status = 'PASSED';
-        if (state.position) closePosition();
-      } else if (state.equity <= CONFIG.HARD_STOP_EQUITY) {
-        state.status = 'TERMINATED';
-        if (state.position) closePosition();
-      }
-    }
-
-    function resetChallenge() {
-      state.balance = CONFIG.INITIAL_BALANCE;
-      state.equity = CONFIG.INITIAL_BALANCE;
-      state.status = 'ACTIVE';
-      state.position = null;
-      renderUI();
-    }
-
-    function renderUI() {
-      const equityEl = document.getElementById('ui-equity');
-      equityEl.innerText = `$${state.equity.toFixed(2)}`;
-      equityEl.className = 'stat-value ' + (state.equity >= CONFIG.INITIAL_BALANCE ? 'pnl-positive' : 'pnl-negative');
-
-      const statusEl = document.getElementById('ui-status');
-      statusEl.innerText = state.status;
-      statusEl.className = `status-badge badge-${state.status.toLowerCase()}`;
-
-      const progress = Math.min(100, Math.max(0, ((state.equity - CONFIG.INITIAL_BALANCE) / (CONFIG.TARGET_EQUITY - CONFIG.INITIAL_BALANCE)) * 100));
-      document.getElementById('ui-progress-bar').style.width = `${progress}%`;
-      document.getElementById('ui-progress-text').innerText = `${progress.toFixed(1)}%`;
-
-      document.getElementById('ui-token-price').innerText = `$${state.currentPrice.toFixed(6)}`;
-
-      const posStatusEl = document.getElementById('ui-pos-status');
-      const posEntryEl = document.getElementById('ui-pos-entry');
-      const posPnlEl = document.getElementById('ui-pos-pnl');
-      const buyBtn = document.getElementById('btn-buy');
-      const closeBtn = document.getElementById('btn-close');
-
-      if (state.position) {
-        posStatusEl.innerText = 'LONG (ACTIVE)';
-        posStatusEl.style.color = 'var(--green)';
-        posEntryEl.innerText = `$${state.position.entryPrice.toFixed(6)}`;
+    <!-- SECTION 2: TERMINAL -->
+    <div id="dashboard-view" style="display:none;">
         
-        const pnl = state.position.unrealizedPnL;
-        posPnlEl.innerText = `${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}`;
-        posPnlEl.className = pnl >= 0 ? 'pnl-positive' : 'pnl-negative';
+        <div class="compact-stats-bar">
+            <button class="reload-chart-btn" onclick="goBackOrResetDex()">← Tokens</button>
+            <div class="stat-item">
+                <span class="stat-lbl">Equity</span>
+                <span class="stat-val" id="val-equity">$1,000.00</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-lbl">Hard Stop</span>
+                <span class="stat-val" id="val-stop" style="color: #ef4444;">$950.00</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-lbl">Target</span>
+                <span class="stat-val" id="val-target" style="color: #10b981;">$1,100.00</span>
+            </div>
+        </div>
 
-        buyBtn.disabled = true;
-        closeBtn.disabled = state.status !== 'ACTIVE';
-      } else {
-        posStatusEl.innerText = 'NONE';
-        posStatusEl.style.color = 'var(--text-muted)';
-        posEntryEl.innerText = '-';
-        posPnlEl.innerText = '$0.00';
-        posPnlEl.className = '';
+        <div class="trade-status-banner" id="status-banner">Ready to Trade</div>
 
-        buyBtn.disabled = state.status !== 'ACTIVE';
-        closeBtn.disabled = true;
-      }
-    }
+        <div class="dex-frame-container">
+            <iframe id="dex-iframe" src="https://dexscreener.com/solana?embed=1&theme=dark&trades=0&info=0"></iframe>
+        </div>
 
-    renderUI();
-  </script>
+        <div class="trade-grid">
+            <button class="action-btn buy-style" id="btn-buy" onclick="processTrade('BUY')">BUY (LONG)</button>
+            <button class="action-btn sell-style" id="btn-sell" onclick="processTrade('SELL')">SELL (SHORT)</button>
+        </div>
+        <button class="action-btn reset-btn" id="btn-reset-session" onclick="forceResetSession()">🔄 Reset Test Account</button>
+    </div>
+
+    <script>
+        const DEFAULT_DEX_URL = "https://dexscreener.com/solana?embed=1&theme=dark&trades=0&info=0";
+        const tg = window.Telegram?.WebApp;
+        if (tg) tg.expand();
+
+        let account = { 
+            initialBalance: 1000, 
+            equity: 1000, 
+            target: 1100, 
+            hardStop: 950, 
+            status: "ACTIVE",
+            currentTrend: 1
+        };
+
+        window.onload = function() {
+            if (tg && tg.initDataUnsafe?.user) {
+                const u = tg.initDataUnsafe.user;
+                document.getElementById('user-greeting').innerText = `@${u.username || u.first_name}`;
+            }
+
+            const savedSession = localStorage.getItem('moonfund_active_session');
+            if (savedSession) {
+                try {
+                    account = JSON.parse(savedSession);
+                    showDashboardUI();
+                } catch(e) {
+                    forceResetSession();
+                }
+            }
+        };
+
+        function resetDexList() {
+            document.getElementById('dex-iframe').src = DEFAULT_DEX_URL;
+        }
+
+        function goBackOrResetDex() {
+            const iframe = document.getElementById('dex-iframe');
+            // If user opened a specific token chart, go back to token list first
+            if (iframe.src !== DEFAULT_DEX_URL) {
+                resetDexList();
+            } else {
+                // Otherwise go back to landing screen
+                showLandingUI();
+            }
+        }
+
+        function forceResetSession() {
+            localStorage.removeItem('moonfund_active_session');
+            location.reload();
+        }
+
+        function launchDashboard(creditAmount) {
+            account = {
+                initialBalance: creditAmount,
+                equity: creditAmount,
+                target: creditAmount * 1.10,
+                hardStop: creditAmount * 0.95,
+                status: "ACTIVE",
+                currentTrend: 1
+            };
+
+            localStorage.setItem('moonfund_active_session', JSON.stringify(account));
+            showDashboardUI();
+        }
+
+        function showDashboardUI() {
+            document.getElementById('landing-view').style.display = 'none';
+            document.getElementById('dashboard-view').style.display = 'block';
+            setupBackButton();
+            renderStats();
+        }
+
+        function showLandingUI() {
+            document.getElementById('dashboard-view').style.display = 'none';
+            document.getElementById('landing-view').style.display = 'block';
+            if (tg && tg.BackButton) tg.BackButton.hide();
+        }
+
+        function setupBackButton() {
+            window.history.pushState({ page: 'terminal' }, '', '');
+            window.onpopstate = function () {
+                goBackOrResetDex();
+                window.history.pushState({ page: 'terminal' }, '', '');
+            };
+
+            if (tg && tg.BackButton) {
+                tg.BackButton.show();
+                tg.BackButton.onClick(() => { goBackOrResetDex(); });
+            }
+        }
+
+        function renderStats(pnl = null, type = '') {
+            const equityEl = document.getElementById('val-equity');
+            equityEl.innerText = `$${account.equity.toFixed(2)}`;
+            document.getElementById('val-stop').innerText = `$${account.hardStop.toFixed(2)}`;
+            document.getElementById('val-target').innerText = `$${account.target.toFixed(2)}`;
+
+            const banner = document.getElementById('status-banner');
+            const resetBtn = document.getElementById('btn-reset-session');
+
+            if (pnl !== null) {
+                const isWin = pnl >= 0;
+                banner.innerText = `${type} ORDER: ${isWin ? '+' : ''}$${pnl.toFixed(2)}`;
+                banner.style.color = isWin ? '#10b981' : '#ef4444';
+                
+                equityEl.style.color = isWin ? '#10b981' : '#ef4444';
+                setTimeout(() => { equityEl.style.color = '#38bdf8'; }, 300);
+            }
+
+            localStorage.setItem('moonfund_active_session', JSON.stringify(account));
+
+            if (account.equity <= account.hardStop) {
+                account.status = "TERMINATED";
+                banner.innerText = "🚨 MAX LOSS HIT ($950)! ACCOUNT TERMINATED.";
+                banner.style.color = "#ef4444";
+                resetBtn.style.display = "block";
+            } else if (account.equity >= account.target) {
+                account.status = "PASSED";
+                banner.innerText = "🏆 TARGET REACHED ($1100)! EVALUATION PASSED!";
+                banner.style.color = "#10b981";
+                resetBtn.style.display = "block";
+            } else {
+                resetBtn.style.display = "none";
+            }
+        }
+
+        function processTrade(type) {
+            if (account.status !== "ACTIVE") {
+                forceResetSession();
+                return;
+            }
+
+            // TREND-BASED REALISTIC LOGIC
+            let pnl = 0;
+            let isPositiveTrend = (type === 'BUY');
+
+            if (Math.random() < 0.25) {
+                isPositiveTrend = !isPositiveTrend;
+            }
+
+            if (isPositiveTrend) {
+                pnl = +(Math.random() * 18 + 5).toFixed(2); // Consistent Profit +$5 to +$23
+            } else {
+                pnl = -(Math.random() * 10 + 3).toFixed(2); // Managed Loss -$3 to -$13
+            }
+
+            account.equity = +(account.equity + pnl).toFixed(2);
+            renderStats(pnl, type);
+        }
+    </script>
 </body>
 </html>

@@ -16,7 +16,7 @@
             padding: 6px;
             user-select: none;
         }
-        .header { text-align: center; margin-bottom: 6px; }
+        .header { text-align: center; margin-bottom: 8px; }
         .header h1 { color: #38bdf8; font-size: 16px; margin: 0; }
         .user-greeting {
             background: rgba(56, 189, 248, 0.1);
@@ -32,13 +32,13 @@
             background-color: #f59e0b;
             color: #000;
             border: none;
-            padding: 12px;
+            padding: 10px;
             border-radius: 8px;
-            font-size: 13px;
+            font-size: 12px;
             font-weight: bold;
             cursor: pointer;
             width: 100%;
-            margin-bottom: 12px;
+            margin-bottom: 10px;
         }
         .card {
             background: #151c2c;
@@ -47,12 +47,12 @@
             padding: 8px;
             margin-bottom: 8px;
         }
-        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
-        .card-title { font-size: 14px; font-weight: bold; color: #f8fafc; }
-        .card-price { background: #0284c7; color: #fff; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
-        .rules { font-size: 11px; color: #94a3b8; line-height: 1.4; margin-bottom: 8px; }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+        .card-title { font-size: 13px; font-weight: bold; color: #f8fafc; }
+        .card-price { background: #0284c7; color: #fff; padding: 2px 6px; border-radius: 10px; font-size: 10px; font-weight: bold; }
+        .rules { font-size: 10px; color: #94a3b8; line-height: 1.3; margin-bottom: 6px; }
         .rules span { color: #e2e8f0; font-weight: 600; }
-        .btn { background-color: #10b981; color: #000; border: none; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; width: 100%; }
+        .btn { background-color: #10b981; color: #000; border: none; padding: 8px; border-radius: 6px; font-size: 12px; font-weight: bold; cursor: pointer; width: 100%; }
 
         /* COMPACT LIVE STATS HEADER */
         .compact-stats-bar {
@@ -149,14 +149,13 @@
 </head>
 <body>
 
-    <!-- SECTION 1: PACKAGES LANDING -->
     <div id="landing-view">
         <div class="header">
             <h1>🚀 MoonFund Evaluation</h1>
             <div class="user-greeting" id="user-greeting">Trader</div>
         </div>
 
-        <button class="test-bypass-btn" onclick="launchDashboard(1000)">⚡ Test Bypass (Activate Terminal)</button>
+        <button class="test-bypass-btn" onclick="launchDashboard(1000)">⚡ Test Bypass (Activate $1,000)</button>
 
         <div class="card">
             <div class="card-header">
@@ -164,14 +163,56 @@
                 <span class="card-price">$15</span>
             </div>
             <div class="rules">
-                • Target: <span>$100 (10%)</span> | Max Loss: <span>5% ($950 Stop)</span><br>
-                • Rules: <span>Position-Based Execution Engine</span>
+                • Target: <span>$100 (10%)</span> | Max Loss: <span>5% ($950 Stop)</span>
             </div>
             <button class="btn" onclick="launchDashboard(1000)">Buy $1,000 Challenge</button>
         </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Mini Trader ($2,500)</span>
+                <span class="card-price">$35</span>
+            </div>
+            <div class="rules">
+                • Target: <span>$250 (10%)</span> | Max Loss: <span>5% ($2,375 Stop)</span>
+            </div>
+            <button class="btn" onclick="launchDashboard(2500)">Buy $2,500 Challenge</button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Pro Fund ($5,000)</span>
+                <span class="card-price">$65</span>
+            </div>
+            <div class="rules">
+                • Target: <span>$500 (10%)</span> | Max Loss: <span>5% ($4,750 Stop)</span>
+            </div>
+            <button class="btn" onclick="launchDashboard(5000)">Buy $5,000 Challenge</button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Whale Scalper ($10,000)</span>
+                <span class="card-price">$120</span>
+            </div>
+            <div class="rules">
+                • Target: <span>$1,000 (10%)</span> | Max Loss: <span>5% ($9,500 Stop)</span>
+            </div>
+            <button class="btn" onclick="launchDashboard(10000)">Buy $10,000 Challenge</button>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Moon Apex ($25,000)</span>
+                <span class="card-price">$250</span>
+            </div>
+            <div class="rules">
+                • Target: <span>$2,500 (10%)</span> | Max Loss: <span>5% ($23,750 Stop)</span>
+            </div>
+            <button class="btn" onclick="launchDashboard(25000)">Buy $25,000 Challenge</button>
+        </div>
     </div>
 
-    <!-- SECTION 2: TERMINAL -->
     <div id="dashboard-view" style="display:none;">
         
         <div class="compact-stats-bar">
@@ -193,7 +234,7 @@
         <div class="trade-status-banner" id="status-banner">Ready to Open Position</div>
 
         <div class="position-card" id="pos-info-card">
-            <span>Pos: <strong id="pos-type-lbl" style="color: #94a3b8;">NONE ($200 Size)</strong></span>
+            <span>Pos: <strong id="pos-type-lbl" style="color: #94a3b8;">NONE</strong></span>
             <span>Floating PnL: <strong id="pos-pnl-lbl">$0.00</strong></span>
         </div>
 
@@ -211,7 +252,6 @@
 
     <script>
         const DEFAULT_DEX_URL = "https://dexscreener.com/solana?embed=1&theme=dark&trades=0&info=0";
-        const POSITION_SIZE_USD = 200.00; // Fixed $200 position exposure per trade
         const tg = window.Telegram?.WebApp;
         if (tg) tg.expand();
 
@@ -223,7 +263,7 @@
             status: "ACTIVE"
         };
 
-        let activePosition = null; // { type: 'BUY'|'SELL', entryPrice: number, currentPrice: number, pnl: number }
+        let activePosition = null; 
         let priceEngineTimer = null;
 
         window.onload = function() {
@@ -266,8 +306,8 @@
             account = {
                 balance: creditAmount,
                 equity: creditAmount,
-                target: creditAmount * 1.10,
-                hardStop: creditAmount * 0.95,
+                target: creditAmount * 1.10, // 10% Target
+                hardStop: creditAmount * 0.95, // 5% Hard Stop
                 status: "ACTIVE"
             };
 
@@ -302,12 +342,15 @@
             }
         }
 
-        // Live Dynamic Tick Engine (Simulates token price micro-movements)
+        // Live Dynamic Tick Engine (Scales position size proportionally to package account size)
         function startPriceEngine() {
             if (priceEngineTimer) clearInterval(priceEngineTimer);
 
             priceEngineTimer = setInterval(() => {
                 if (!activePosition || account.status !== "ACTIVE") return;
+
+                // Position exposure = 20% of initial account balance
+                const positionSizeUsd = account.balance * 0.20;
 
                 // Micro Volatility Movement (0.3% range)
                 const movePercent = (Math.random() - 0.49) * 0.006;
@@ -316,9 +359,9 @@
                 // Calculate Floating PnL based on position direction
                 const priceRatio = activePosition.currentPrice / activePosition.entryPrice;
                 if (activePosition.type === 'BUY') {
-                    activePosition.pnl = (priceRatio - 1) * POSITION_SIZE_USD;
+                    activePosition.pnl = (priceRatio - 1) * positionSizeUsd;
                 } else {
-                    activePosition.pnl = (1 - priceRatio) * POSITION_SIZE_USD;
+                    activePosition.pnl = (1 - priceRatio) * positionSizeUsd;
                 }
 
                 // Floating Equity = Balance + Position PnL
@@ -332,7 +375,7 @@
         function openPosition(type) {
             if (account.status !== "ACTIVE" || activePosition) return;
 
-            const basePrice = 0.0500; // Reference base price
+            const basePrice = 0.0500;
             activePosition = {
                 type: type,
                 entryPrice: basePrice,
@@ -344,7 +387,7 @@
             document.getElementById('btn-sell').style.display = 'none';
             document.getElementById('btn-close').style.display = 'block';
 
-            document.getElementById('status-banner').innerText = `ACTIVE ${type} POSITION OPEN ($200 Exposure)`;
+            document.getElementById('status-banner').innerText = `ACTIVE ${type} POSITION OPEN`;
             document.getElementById('status-banner').style.color = '#38bdf8';
             renderStats();
         }
@@ -396,7 +439,8 @@
                 posPnlLbl.innerText = `${pnlVal >= 0 ? '+' : ''}$${pnlVal.toFixed(2)}`;
                 posPnlLbl.className = pnlVal >= 0 ? 'pnl-green' : 'pnl-red';
             } else {
-                posTypeLbl.innerText = 'NONE ($200 Size)';
+                const exposure = (account.balance * 0.20).toFixed(0);
+                posTypeLbl.innerText = `NONE ($${exposure} Size)`;
                 posTypeLbl.style.color = '#94a3b8';
                 posPnlLbl.innerText = '$0.00';
                 posPnlLbl.className = '';
@@ -406,12 +450,12 @@
 
             const banner = document.getElementById('status-banner');
             if (account.status === "TERMINATED") {
-                banner.innerText = "🚨 MAX LOSS HIT ($950)! ACCOUNT TERMINATED.";
+                banner.innerText = `🚨 MAX LOSS HIT ($${account.hardStop.toFixed(2)})! TERMINATED.`;
                 banner.style.color = "#ef4444";
                 resetBtn.style.display = "block";
                 disableTrading();
             } else if (account.status === "PASSED") {
-                banner.innerText = "🏆 TARGET REACHED ($1100)! EVALUATION PASSED!";
+                banner.innerText = `🏆 TARGET REACHED ($${account.target.toFixed(2)})! PASSED!`;
                 banner.style.color = "#10b981";
                 resetBtn.style.display = "block";
                 disableTrading();

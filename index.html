@@ -15,7 +15,6 @@
       --accent: #6366f1;
       --green: #10b981;
       --red: #ef4444;
-      --yellow: #f59e0b;
     }
 
     * {
@@ -77,19 +76,22 @@
       overflow-y: auto;
     }
 
-    /* DexScreener Chart Frame */
+    /* DexScreener Chart Frame with Branding Mask */
     .chart-container {
       width: 100%;
-      height: 320px;
+      height: 300px;
       position: relative;
       border-bottom: 1px solid var(--border);
       background: #000;
+      overflow: hidden;
     }
 
+    /* Crop out the bottom 'Tracked by DexScreener' banner */
     .chart-container iframe {
       width: 100%;
-      height: 100%;
+      height: 108%;
       border: 0;
+      margin-top: 0;
     }
 
     /* Challenge & Status Card */
@@ -218,9 +220,9 @@
 
   <!-- Main Scrollable Body -->
   <div class="main-container">
-    <!-- Chart Widget (Solana Pair via DexScreener) -->
+    <!-- Chart Widget without branding footer -->
     <div class="chart-container">
-      <iframe src="https://dexscreener.com/solana/4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R?embed=1&theme=dark&trades=0&info=0"></iframe>
+      <iframe src="https://dexscreener.com/solana/4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R?embed=1&theme=dark&trades=0&info=0&chartHeader=0"></iframe>
     </div>
 
     <!-- Challenge Overview Card -->
@@ -259,36 +261,49 @@
   </div>
 
   <script>
-    // Initial State Configuration
     const CONFIG = {
       INITIAL_BALANCE: 1000.00,
       TARGET_EQUITY: 1100.00,
       HARD_STOP_EQUITY: 950.00,
-      POSITION_SIZE_USD: 200.00, // Fixed position exposure per trade
-      VOLATILITY: 0.004 // Simulated 0.4% micro volatility per tick
+      POSITION_SIZE_USD: 200.00,
+      VOLATILITY: 0.004
     };
 
     let state = {
       balance: CONFIG.INITIAL_BALANCE,
       equity: CONFIG.INITIAL_BALANCE,
-      status: 'ACTIVE', // ACTIVE, PASSED, TERMINATED
-      currentPrice: 0.042000, // Initial base simulated price
-      position: null // { entryPrice, sizeUsd, unrealizedPnL }
+      status: 'ACTIVE',
+      currentPrice: 0.042000,
+      position: null
     };
 
-    // Initialize Telegram Mini App API
-    if (window.Telegram && window.Telegram.WebApp) {
-      window.Telegram.WebApp.ready();
-      window.Telegram.WebApp.expand();
+    // Telegram Mini App Integration & Back Button Handling
+    const tg = window.Telegram ? window.Telegram.WebApp : null;
+
+    if (tg) {
+      tg.ready();
+      tg.expand();
+
+      // Show Native Back Button
+      if (tg.BackButton) {
+        tg.BackButton.show();
+        tg.BackButton.onClick(() => {
+          // Navigate back to coins list / previous window instead of exiting app
+          if (window.history.length > 1) {
+            window.history.back();
+          } else {
+            // Fallback: If no browser history exists, redirect to coins selection screen URL
+            window.location.href = "coins.html"; 
+          }
+        });
+      }
     }
 
-    // Continuous Real-Time Price Simulation Engine (Random Walk)
+    // Continuous Real-Time Price Engine
     setInterval(() => {
-      // Geometric Brownian Motion step
       const delta = (Math.random() - 0.495) * CONFIG.VOLATILITY; 
       state.currentPrice = Math.max(0.000001, state.currentPrice * (1 + delta));
 
-      // Update position calculations tick-by-tick
       if (state.position) {
         const priceRatio = state.currentPrice / state.position.entryPrice;
         state.position.unrealizedPnL = (priceRatio - 1) * state.position.sizeUsd;
@@ -299,11 +314,10 @@
 
       checkEvaluationRules();
       renderUI();
-    }, 300); // Ticks every 300ms
+    }, 300);
 
     function openPosition() {
       if (state.status !== 'ACTIVE' || state.position) return;
-
       state.position = {
         entryPrice: state.currentPrice,
         sizeUsd: CONFIG.POSITION_SIZE_USD,
@@ -314,12 +328,9 @@
 
     function closePosition() {
       if (!state.position) return;
-
-      // Realize PnL into Account Balance
       state.balance += state.position.unrealizedPnL;
       state.equity = state.balance;
       state.position = null;
-
       checkEvaluationRules();
       renderUI();
     }
@@ -327,13 +338,10 @@
     function checkEvaluationRules() {
       if (state.status !== 'ACTIVE') return;
 
-      // Check Target Hit
       if (state.equity >= CONFIG.TARGET_EQUITY) {
         state.status = 'PASSED';
         if (state.position) closePosition();
-      }
-      // Check Hard Stop Hit
-      else if (state.equity <= CONFIG.HARD_STOP_EQUITY) {
+      } else if (state.equity <= CONFIG.HARD_STOP_EQUITY) {
         state.status = 'TERMINATED';
         if (state.position) closePosition();
       }
@@ -348,25 +356,20 @@
     }
 
     function renderUI() {
-      // Stats
       const equityEl = document.getElementById('ui-equity');
       equityEl.innerText = `$${state.equity.toFixed(2)}`;
       equityEl.className = 'stat-value ' + (state.equity >= CONFIG.INITIAL_BALANCE ? 'pnl-positive' : 'pnl-negative');
 
-      // Status Badge
       const statusEl = document.getElementById('ui-status');
       statusEl.innerText = state.status;
       statusEl.className = `status-badge badge-${state.status.toLowerCase()}`;
 
-      // Progress Bar Calculations ($100 profit target window)
       const progress = Math.min(100, Math.max(0, ((state.equity - CONFIG.INITIAL_BALANCE) / (CONFIG.TARGET_EQUITY - CONFIG.INITIAL_BALANCE)) * 100));
       document.getElementById('ui-progress-bar').style.width = `${progress}%`;
       document.getElementById('ui-progress-text').innerText = `${progress.toFixed(1)}%`;
 
-      // Live Token Price
       document.getElementById('ui-token-price').innerText = `$${state.currentPrice.toFixed(6)}`;
 
-      // Position Info
       const posStatusEl = document.getElementById('ui-pos-status');
       const posEntryEl = document.getElementById('ui-pos-entry');
       const posPnlEl = document.getElementById('ui-pos-pnl');
@@ -396,7 +399,6 @@
       }
     }
 
-    // Initial render call
     renderUI();
   </script>
 </body>

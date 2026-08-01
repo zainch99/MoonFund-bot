@@ -6,31 +6,18 @@
     <title>MoonFund</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; }
+        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         body {
             background-color: #0d1117;
             color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             padding: 10px;
-            padding-bottom: 70px;
+            padding-bottom: 80px;
         }
-        .header {
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        .header h2 {
-            font-size: 18px;
-            color: #38bdf8;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-        }
-        .user-tag {
-            font-size: 12px;
-            color: #94a3b8;
-            margin-top: 2px;
-        }
+        .header { text-align: center; margin-bottom: 8px; }
+        .header h2 { font-size: 16px; color: #38bdf8; }
+        .user-tag { font-size: 11px; color: #94a3b8; }
+        
         .dev-btn {
             background: #f59e0b;
             color: #000;
@@ -46,101 +33,84 @@
             background: #161b22;
             border: 1px solid #30363d;
             border-radius: 12px;
-            padding: 14px;
+            padding: 12px;
             margin-bottom: 10px;
         }
         .pkg-title {
-            font-size: 15px;
+            font-size: 14px;
             font-weight: bold;
             display: flex;
             justify-content: space-between;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
         }
-        .pkg-price-badge {
-            background: #1f6feb;
-            color: #fff;
-            padding: 2px 8px;
-            border-radius: 12px;
-            font-size: 12px;
-        }
+        .pkg-price-badge { background: #1f6feb; color: #fff; padding: 2px 6px; border-radius: 10px; font-size: 11px; }
         .buy-btn {
             background: #238636;
             color: #fff;
             border: none;
             width: 100%;
-            padding: 10px;
-            border-radius: 8px;
-            font-weight: bold;
-            font-size: 14px;
-            cursor: pointer;
-        }
-        .timer-banner {
-            background: #d97706;
-            color: #fff;
             padding: 8px;
             border-radius: 6px;
             font-weight: bold;
-            font-size: 12px;
-            margin-bottom: 10px;
-            text-align: center;
+            font-size: 13px;
+            cursor: pointer;
         }
 
-        /* Stats Bar */
+        .timer-banner {
+            background: #d97706;
+            color: #fff;
+            padding: 6px;
+            border-radius: 6px;
+            font-weight: bold;
+            font-size: 11px;
+            margin-bottom: 8px;
+            text-align: center;
+        }
         .stats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
             gap: 4px;
             background: #161b22;
-            padding: 10px;
+            padding: 8px;
             border-radius: 8px;
-            font-size: 10px;
-            margin-bottom: 8px;
+            font-size: 9px;
+            margin-bottom: 6px;
             text-align: center;
             border: 1px solid #30363d;
         }
-        .stat-val { font-weight: bold; font-size: 12px; margin-top: 2px; }
+        .stat-val { font-weight: bold; font-size: 11px; margin-top: 2px; }
 
-        /* Pos & PnL Bar */
         .pnl-box {
             background: #161b22;
-            padding: 8px 12px;
+            padding: 8px 10px;
             border-radius: 8px;
             border: 1px solid #30363d;
             display: flex;
             justify-content: space-between;
             align-items: center;
             color: #8b949e;
-            font-size: 12px;
-            margin-bottom: 10px;
+            font-size: 11px;
+            margin-bottom: 8px;
         }
 
-        /* DEX Tabs */
-        .dex-tabs {
-            display: flex;
-            gap: 6px;
-            margin-bottom: 8px;
-            font-size: 11px;
-        }
+        .dex-tabs { display: flex; gap: 6px; margin-bottom: 8px; }
         .dex-tab {
             background: #161b22;
             padding: 6px 10px;
             border-radius: 6px;
             border: 1px solid #30363d;
             color: #8b949e;
+            font-size: 11px;
+            cursor: pointer;
         }
-        .dex-tab.active {
-            background: #1f6feb;
-            color: white;
-            border-color: #1f6feb;
-        }
+        .dex-tab.active { background: #1f6feb; color: white; border-color: #1f6feb; }
 
-        /* Meta Banner */
         .hall-banner {
             background: #161b22;
             border: 1px solid #30363d;
-            padding: 8px 12px;
-            border-radius: 8px;
-            font-size: 12px;
+            padding: 6px 10px;
+            border-radius: 6px;
+            font-size: 11px;
             color: #f59e0b;
             display: flex;
             justify-content: space-between;
@@ -148,49 +118,39 @@
             margin-bottom: 8px;
         }
 
-        /* Analytics Metric Grid */
         .analytics-grid {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
-            gap: 6px;
+            gap: 4px;
             background: #161b22;
-            padding: 8px;
-            border-radius: 8px;
+            padding: 6px;
+            border-radius: 6px;
             border: 1px solid #30363d;
-            font-size: 9px;
+            font-size: 8px;
             color: #8b949e;
             margin-bottom: 8px;
             text-align: center;
         }
-        .analytics-val { color: #38bdf8; font-weight: bold; font-size: 11px; margin-top: 2px; }
+        .analytics-val { color: #38bdf8; font-weight: bold; font-size: 10px; margin-top: 1px; }
 
-        /* Filter Sub-Bar */
-        .filter-bar {
-            display: flex;
-            gap: 8px;
-            margin-bottom: 8px;
-            font-size: 11px;
-        }
+        .filter-bar { display: flex; gap: 6px; margin-bottom: 8px; }
         .filter-item {
             background: #161b22;
             padding: 4px 8px;
             border-radius: 4px;
             border: 1px solid #30363d;
             color: #8b949e;
+            font-size: 10px;
+            cursor: pointer;
         }
-        .filter-item.active {
-            background: #238636;
-            color: white;
-            border-color: #238636;
-        }
+        .filter-item.active { background: #238636; color: white; border-color: #238636; }
 
-        /* Token Table Header & List */
         .table-header {
             display: grid;
             grid-template-columns: 2fr 1fr 1fr;
-            font-size: 10px;
+            font-size: 9px;
             color: #8b949e;
-            padding: 4px 8px;
+            padding: 4px 6px;
             border-bottom: 1px solid #30363d;
             margin-bottom: 4px;
         }
@@ -199,32 +159,32 @@
             background: #161b22;
             border: 1px solid #30363d;
             padding: 8px 10px;
-            border-radius: 8px;
+            border-radius: 6px;
             display: grid;
             grid-template-columns: 2fr 1fr 1fr;
             align-items: center;
+            cursor: pointer;
         }
-        .token-symbol { font-weight: bold; font-size: 12px; color: #fff; }
-        .token-sub { font-size: 9px; color: #8b949e; margin-top: 1px; }
-        .mcap-val { font-size: 11px; font-weight: bold; color: #22c55e; }
-        .price-val { font-size: 11px; font-weight: bold; color: #fff; text-align: right; }
+        .token-symbol { font-weight: bold; font-size: 11px; color: #fff; }
+        .token-sub { font-size: 8px; color: #8b949e; }
+        .mcap-val { font-size: 10px; font-weight: bold; color: #22c55e; }
+        .price-val { font-size: 10px; font-weight: bold; color: #fff; text-align: right; }
 
-        /* Floating Trade Buttons at Bottom */
         .trade-btns-fixed {
             position: fixed;
             bottom: 0;
             left: 0;
             right: 0;
             background: #0d1117;
-            padding: 10px 12px;
+            padding: 8px 10px;
             border-top: 1px solid #30363d;
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 10px;
-            z-index: 999;
+            gap: 8px;
+            z-index: 9999;
         }
-        .btn-long { background: #238636; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; }
-        .btn-short { background: #da3633; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; }
+        .btn-long { background: #238636; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; }
+        .btn-short { background: #da3633; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; }
 
         #loading-screen { display: block; }
         #packages-screen { display: none; }
@@ -242,50 +202,33 @@
         <p style="color: #94a3b8;">Loading MoonFund Account...</p>
     </div>
 
+    <!-- PACKAGES -->
     <div id="packages-screen">
         <div class="dev-btn" onclick="bypassPayment()">⚡ Test Bypass (Dev Only)</div>
 
         <div class="pkg-card">
-            <div class="pkg-title">
-                Micro Mooner ($1,000)
-                <span class="pkg-price-badge">$15</span>
-            </div>
+            <div class="pkg-title">Micro Mooner ($1,000)<span class="pkg-price-badge">$15</span></div>
             <button class="buy-btn" onclick="buyChallenge('Micro Mooner', 15)">Buy $1,000 Challenge ($15)</button>
         </div>
-
         <div class="pkg-card">
-            <div class="pkg-title">
-                Mini Trader ($2,500)
-                <span class="pkg-price-badge">$35</span>
-            </div>
+            <div class="pkg-title">Mini Trader ($2,500)<span class="pkg-price-badge">$35</span></div>
             <button class="buy-btn" onclick="buyChallenge('Mini Trader', 35)">Buy $2,500 Challenge ($35)</button>
         </div>
-
         <div class="pkg-card">
-            <div class="pkg-title">
-                Pro Scalper ($5,000)
-                <span class="pkg-price-badge">$65</span>
-            </div>
+            <div class="pkg-title">Pro Scalper ($5,000)<span class="pkg-price-badge">$65</span></div>
             <button class="buy-btn" onclick="buyChallenge('Pro Scalper', 65)">Buy $5,000 Challenge ($65)</button>
         </div>
-
         <div class="pkg-card">
-            <div class="pkg-title">
-                Whale Scalper ($10,000)
-                <span class="pkg-price-badge">$120</span>
-            </div>
+            <div class="pkg-title">Whale Scalper ($10,000)<span class="pkg-price-badge">$120</span></div>
             <button class="buy-btn" onclick="buyChallenge('Whale Scalper', 120)">Buy $10,000 Challenge ($120)</button>
         </div>
-
         <div class="pkg-card">
-            <div class="pkg-title">
-                Moon Apex ($25,000)
-                <span class="pkg-price-badge">$250</span>
-            </div>
+            <div class="pkg-title">Moon Apex ($25,000)<span class="pkg-price-badge">$250</span></div>
             <button class="buy-btn" onclick="buyChallenge('Moon Apex', 250)">Buy $25,000 Challenge ($250)</button>
         </div>
     </div>
 
+    <!-- TRADING TERMINAL -->
     <div id="trading-screen">
         <div class="timer-banner" id="challenge-timer">⏱ Time Remaining: 7d 00h 00m</div>
 
@@ -301,9 +244,9 @@
         </div>
 
         <div class="dex-tabs">
-            <div class="dex-tab active">All DEXes</div>
-            <div class="dex-tab">💊 PumpSwap</div>
-            <div class="dex-tab">Orca</div>
+            <div class="dex-tab active" onclick="switchTab(this)">All DEXes</div>
+            <div class="dex-tab" onclick="switchTab(this)">💊 PumpSwap</div>
+            <div class="dex-tab" onclick="switchTab(this)">Orca</div>
         </div>
 
         <div class="hall-banner">
@@ -318,11 +261,11 @@
         </div>
 
         <div class="filter-bar">
-            <div class="filter-item">24H</div>
-            <div class="filter-item active">🔥 Trending</div>
-            <div class="filter-item">5M</div>
-            <div class="filter-item">1H</div>
-            <div class="filter-item">1D</div>
+            <div class="filter-item" onclick="switchFilter(this)">24H</div>
+            <div class="filter-item active" onclick="switchFilter(this)">🔥 Trending</div>
+            <div class="filter-item" onclick="switchFilter(this)">5M</div>
+            <div class="filter-item" onclick="switchFilter(this)">1H</div>
+            <div class="filter-item" onclick="switchFilter(this)">1D</div>
         </div>
 
         <div class="table-header">
@@ -332,7 +275,7 @@
         </div>
 
         <div class="token-list">
-            <div class="token-item">
+            <div class="token-item" onclick="selectToken('CATE')">
                 <div>
                     <div class="token-symbol">🐱 CATE / SOL</div>
                     <div class="token-sub">24H VOL: $5.87B</div>
@@ -341,7 +284,7 @@
                 <div class="price-val">$0.007722</div>
             </div>
 
-            <div class="token-item">
+            <div class="token-item" onclick="selectToken('CP')">
                 <div>
                     <div class="token-symbol">💊 CP / SOL</div>
                     <div class="token-sub">24H TXNS: 22.2M</div>
@@ -350,7 +293,7 @@
                 <div class="price-val">$0.0002512</div>
             </div>
 
-            <div class="token-item">
+            <div class="token-item" onclick="selectToken('CONTRA')">
                 <div>
                     <div class="token-symbol">⚡ CONTRA / SOL</div>
                     <div class="token-sub">TRENDING #1</div>
@@ -359,7 +302,7 @@
                 <div class="price-val">$0.0009746</div>
             </div>
 
-            <div class="token-item">
+            <div class="token-item" onclick="selectToken('MOORDSEC')">
                 <div>
                     <div class="token-symbol">🔥 MOORDSEC</div>
                     <div class="token-sub">TRENDING #2</div>
@@ -370,8 +313,8 @@
         </div>
 
         <div class="trade-btns-fixed">
-            <button class="btn-long">BUY (LONG)</button>
-            <button class="btn-short">SELL (SHORT)</button>
+            <button class="btn-long" onclick="executeTrade('LONG')">BUY (LONG)</button>
+            <button class="btn-short" onclick="executeTrade('SHORT')">SELL (SHORT)</button>
         </div>
     </div>
 
@@ -380,15 +323,12 @@
         tg.expand();
 
         const BACKEND_URL = "https://moonfund-bot-production.up.railway.app";
-        
-        // Telegram User Init
         const user = tg.initDataUnsafe?.user;
         const userId = user?.id || "123456789";
         const username = user?.username ? `@${user.username}` : (user?.first_name || "@Trader");
         
         document.getElementById('user-display').innerText = username;
 
-        // Dev Bypass Function
         function bypassPayment() {
             document.getElementById('loading-screen').style.display = 'none';
             document.getElementById('packages-screen').style.display = 'none';
@@ -396,14 +336,11 @@
             start7DayTimer(new Date());
         }
 
-        // Access Check Function
         async function checkAccess() {
             try {
                 const res = await fetch(`${BACKEND_URL}/api/user-status?user_id=${userId}`);
                 const data = await res.json();
-
                 document.getElementById('loading-screen').style.display = 'none';
-
                 if (data.is_paid) {
                     document.getElementById('packages-screen').style.display = 'none';
                     document.getElementById('trading-screen').style.display = 'block';
@@ -418,7 +355,6 @@
             }
         }
 
-        // Buy Challenge Function
         async function buyChallenge(title, amount) {
             try {
                 const res = await fetch(`${BACKEND_URL}/api/create-invoice`, {
@@ -437,27 +373,41 @@
             }
         }
 
-        // 7-Day Countdown Timer Logic
         function start7DayTimer(startTime) {
             const duration = 7 * 24 * 60 * 60 * 1000;
             const expiry = new Date(startTime).getTime() + duration;
-
             setInterval(() => {
                 const now = new Date().getTime();
                 const diff = expiry - now;
-
                 if (diff <= 0) {
                     document.getElementById('challenge-timer').innerText = "❌ CHALLENGE EXPIRED";
                     document.getElementById('challenge-timer').style.background = "#dc2626";
                     return;
                 }
-
                 const days = Math.floor(diff / (1000 * 60 * 60 * 24));
                 const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
                 const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
                 document.getElementById('challenge-timer').innerText = `⏱ Time Remaining: ${days}d ${hours}h ${mins}m`;
             }, 1000);
+        }
+
+        function switchTab(el) {
+            document.querySelectorAll('.dex-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function switchFilter(el) {
+            document.querySelectorAll('.filter-item').forEach(f => f.classList.remove('active'));
+            el.classList.add('active');
+        }
+
+        function selectToken(symbol) {
+            tg.HapticFeedback.impactOccurred('light');
+        }
+
+        function executeTrade(type) {
+            tg.HapticFeedback.notificationOccurred('success');
+            alert(`${type} Order Executed Successfully!`);
         }
 
         checkAccess();

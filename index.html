@@ -257,9 +257,7 @@
     </div>
 
     <script>
-        // Yahan apni Railway backend ka live URL dalein (jaise: https://xxx.up.railway.app)
-        const BACKEND_URL = "YOUR_RAILWAY_BACKEND_URL_HERE"; 
-        
+        const BACKEND_URL = "https://moonfund-bot-production.up.railway.app";
         const DEFAULT_DEX_URL = "https://dexscreener.com/solana?embed=1&theme=dark&trades=0&info=0";
         const tg = window.Telegram?.WebApp;
         if (tg) tg.expand();
@@ -325,7 +323,7 @@
             } catch (err) {
                 if (tg?.MainButton) tg.MainButton.hide();
                 console.error(err);
-                alert('Network Error! Please ensure Railway URL is correct.');
+                alert('Network Error! Please ensure Railway backend is active.');
             }
         }
 

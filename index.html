@@ -15,7 +15,7 @@
         }
         .header {
             text-align: center;
-            margin-bottom: 15px;
+            margin-bottom: 12px;
         }
         .header h2 {
             font-size: 18px;
@@ -47,7 +47,6 @@
             border-radius: 12px;
             padding: 14px;
             margin-bottom: 12px;
-            position: relative;
         }
         .pkg-title {
             font-size: 16px;
@@ -97,30 +96,28 @@
         }
         .stat-val { font-weight: bold; color: #38bdf8; margin-top: 3px; }
         .trade-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
-        .btn-long { background: #238636; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; }
-        .btn-short { background: #da3633; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; }
+        .btn-long { background: #238636; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; width: 100%; }
+        .btn-short { background: #da3633; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; width: 100%; }
 
-        #loading-screen, #packages-screen, #trading-screen { display: none; }
+        #loading-screen { display: block; }
+        #packages-screen { display: none; }
+        #trading-screen { display: none; }
     </style>
 </head>
 <body>
 
-    <!-- Header Section -->
     <div class="header">
         <h2>🚀 MoonFund Evaluation</h2>
-        <div class="user-tag" id="user-display">@User</div>
+        <div class="user-tag" id="user-display">@Trader</div>
     </div>
 
-    <!-- Loading Screen -->
-    <div id="loading-screen" style="display: block; text-align: center; padding: 40px 0;">
+    <div id="loading-screen" style="text-align: center; padding: 40px 0;">
         <p style="color: #94a3b8;">Loading MoonFund Account...</p>
     </div>
 
-    <!-- PACKAGES SCREEN (UNPAID USERS) -->
     <div id="packages-screen">
         <div class="dev-btn" onclick="bypassPayment()">⚡ Test Bypass (Dev Only)</div>
 
-        <!-- Pkg 1 -->
         <div class="pkg-card">
             <div class="pkg-title">
                 Micro Mooner ($1,000)
@@ -129,7 +126,6 @@
             <button class="buy-btn" onclick="buyChallenge('Micro Mooner', 15)">Buy $1,000 Challenge ($15)</button>
         </div>
 
-        <!-- Pkg 2 -->
         <div class="pkg-card">
             <div class="pkg-title">
                 Mini Trader ($2,500)
@@ -138,7 +134,6 @@
             <button class="buy-btn" onclick="buyChallenge('Mini Trader', 35)">Buy $2,500 Challenge ($35)</button>
         </div>
 
-        <!-- Pkg 3 -->
         <div class="pkg-card">
             <div class="pkg-title">
                 Pro Scalper ($5,000)
@@ -147,7 +142,6 @@
             <button class="buy-btn" onclick="buyChallenge('Pro Scalper', 65)">Buy $5,000 Challenge ($65)</button>
         </div>
 
-        <!-- Pkg 4 -->
         <div class="pkg-card">
             <div class="pkg-title">
                 Whale Scalper ($10,000)
@@ -156,7 +150,6 @@
             <button class="buy-btn" onclick="buyChallenge('Whale Scalper', 120)">Buy $10,000 Challenge ($120)</button>
         </div>
 
-        <!-- Pkg 5 -->
         <div class="pkg-card">
             <div class="pkg-title">
                 Moon Apex ($25,000)
@@ -166,7 +159,6 @@
         </div>
     </div>
 
-    <!-- TRADING SCREEN (PAID USERS) -->
     <div id="trading-screen">
         <div class="timer-banner" id="challenge-timer">⏱ Time Remaining: 7d 00h 00m</div>
 
@@ -176,7 +168,7 @@
             <div>TARGET<div class="stat-val" style="color:#22c55e;">$1100.00</div></div>
         </div>
 
-        <div style="background:#161b22; padding:15px; border-radius:8px; border:1px solid #30363d; text-align:center; color:#8b949e; font-size:12px; margin-bottom:15px;">
+        <div style="background:#161b22; padding:12px; border-radius:8px; border:1px solid #30363d; text-align:center; color:#8b949e; font-size:12px; margin-bottom:12px;">
             Ready to Open Position<br>
             <strong style="color:#fff; font-size:14px;">Floating PnL: $0.00</strong>
         </div>
@@ -193,15 +185,22 @@
 
         const BACKEND_URL = "https://moonfund-bot-production.up.railway.app";
         
-        // Fetch User Info
+        // Telegram User Init
         const user = tg.initDataUnsafe?.user;
         const userId = user?.id || "123456789";
         const username = user?.username ? `@${user.username}` : (user?.first_name || "@Trader");
         
-        // Set Header Username
         document.getElementById('user-display').innerText = username;
 
-        // Check Access on Open
+        // Bypass Function
+        function bypassPayment() {
+            document.getElementById('loading-screen').style.display = 'none';
+            document.getElementById('packages-screen').style.display = 'none';
+            document.getElementById('trading-screen').style.display = 'block';
+            start7DayTimer(new Date());
+        }
+
+        // Access Check
         async function checkAccess() {
             try {
                 const res = await fetch(`${BACKEND_URL}/api/user-status?user_id=${userId}`);
@@ -218,21 +217,12 @@
                     document.getElementById('trading-screen').style.display = 'none';
                 }
             } catch (e) {
-                console.error("Access Check Error:", e);
                 document.getElementById('loading-screen').style.display = 'none';
                 document.getElementById('packages-screen').style.display = 'block';
             }
         }
 
-        // Dev Bypass Function
-        function bypassPayment() {
-            document.getElementById('loading-screen').style.display = 'none';
-            document.getElementById('packages-screen').style.display = 'none';
-            document.getElementById('trading-screen').style.display = 'block';
-            start7DayTimer(new Date());
-        }
-
-        // Buy Challenge Function
+        // Buy Challenge
         async function buyChallenge(title, amount) {
             try {
                 const res = await fetch(`${BACKEND_URL}/api/create-invoice`, {
@@ -247,13 +237,13 @@
                     alert("Invoice Generation Failed");
                 }
             } catch (e) {
-                alert("Payment Server Connection Error");
+                alert("Payment Server Error");
             }
         }
 
-        // 7-Day Timer Logic
+        // Timer Logic
         function start7DayTimer(startTime) {
-            const duration = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
+            const duration = 7 * 24 * 60 * 60 * 1000;
             const expiry = new Date(startTime).getTime() + duration;
 
             setInterval(() => {
@@ -261,7 +251,7 @@
                 const diff = expiry - now;
 
                 if (diff <= 0) {
-                    document.getElementById('challenge-timer').innerText = "❌ CHALLENGE EXPIRED / FAILED";
+                    document.getElementById('challenge-timer').innerText = "❌ CHALLENGE EXPIRED";
                     document.getElementById('challenge-timer').style.background = "#dc2626";
                     return;
                 }
@@ -274,7 +264,6 @@
             }, 1000);
         }
 
-        // Initialize App
         checkAccess();
     </script>
 </body>

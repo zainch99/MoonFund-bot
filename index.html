@@ -34,11 +34,12 @@
             background: #f59e0b;
             color: #000;
             font-weight: bold;
-            padding: 8px;
+            padding: 10px;
             border-radius: 8px;
             margin: 10px 0 15px 0;
             font-size: 13px;
             text-align: center;
+            cursor: pointer;
         }
         .pkg-card {
             background: #161b22;
@@ -53,6 +54,7 @@
             font-weight: bold;
             display: flex;
             justify-content: space-between;
+            margin-bottom: 10px;
         }
         .pkg-price-badge {
             background: #1f6feb;
@@ -60,11 +62,6 @@
             padding: 2px 8px;
             border-radius: 12px;
             font-size: 12px;
-        }
-        .pkg-details {
-            font-size: 12px;
-            color: #8b949e;
-            margin: 8px 0 12px 0;
         }
         .buy-btn {
             background: #238636;
@@ -87,7 +84,6 @@
             margin-bottom: 12px;
             text-align: center;
         }
-        /* Dashboard Stats */
         .stats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -109,64 +105,68 @@
 </head>
 <body>
 
+    <!-- Header Section -->
     <div class="header">
         <h2>🚀 MoonFund Evaluation</h2>
         <div class="user-tag" id="user-display">@User</div>
     </div>
 
+    <!-- Loading Screen -->
     <div id="loading-screen" style="display: block; text-align: center; padding: 40px 0;">
         <p style="color: #94a3b8;">Loading MoonFund Account...</p>
     </div>
 
+    <!-- PACKAGES SCREEN (UNPAID USERS) -->
     <div id="packages-screen">
-        <div class="dev-btn">⚡ Test Bypass (Dev Only)</div>
+        <div class="dev-btn" onclick="bypassPayment()">⚡ Test Bypass (Dev Only)</div>
 
+        <!-- Pkg 1 -->
         <div class="pkg-card">
             <div class="pkg-title">
                 Micro Mooner ($1,000)
                 <span class="pkg-price-badge">$15</span>
             </div>
-            <div class="pkg-details">• Target: $100 (10%) | Max Loss: 5% ($950 Stop)</div>
             <button class="buy-btn" onclick="buyChallenge('Micro Mooner', 15)">Buy $1,000 Challenge ($15)</button>
         </div>
 
+        <!-- Pkg 2 -->
         <div class="pkg-card">
             <div class="pkg-title">
                 Mini Trader ($2,500)
                 <span class="pkg-price-badge">$35</span>
             </div>
-            <div class="pkg-details">• Target: $250 (10%) | Max Loss: 5% ($2,375 Stop)</div>
             <button class="buy-btn" onclick="buyChallenge('Mini Trader', 35)">Buy $2,500 Challenge ($35)</button>
         </div>
 
+        <!-- Pkg 3 -->
         <div class="pkg-card">
             <div class="pkg-title">
                 Pro Scalper ($5,000)
                 <span class="pkg-price-badge">$65</span>
             </div>
-            <div class="pkg-details">• Target: $500 (10%) | Max Loss: 5% ($4,750 Stop)</div>
             <button class="buy-btn" onclick="buyChallenge('Pro Scalper', 65)">Buy $5,000 Challenge ($65)</button>
         </div>
 
+        <!-- Pkg 4 -->
         <div class="pkg-card">
             <div class="pkg-title">
                 Whale Scalper ($10,000)
                 <span class="pkg-price-badge">$120</span>
             </div>
-            <div class="pkg-details">• Target: $1,000 (10%) | Max Loss: 5% ($9,500 Stop)</div>
             <button class="buy-btn" onclick="buyChallenge('Whale Scalper', 120)">Buy $10,000 Challenge ($120)</button>
         </div>
 
+        <!-- Pkg 5 -->
         <div class="pkg-card">
             <div class="pkg-title">
                 Moon Apex ($25,000)
                 <span class="pkg-price-badge">$250</span>
             </div>
-            <div class="pkg-details">• Target: $2,500 (10%) | Max Loss: 5% ($23,750 Stop)</div>
             <button class="buy-btn" onclick="buyChallenge('Moon Apex', 250)">Buy $25,000 Challenge ($250)</button>
         </div>
     </div>
 
+    <!-- TRADING SCREEN (PAID USERS) -->
     <div id="trading-screen">
         <div class="timer-banner" id="challenge-timer">⏱ Time Remaining: 7d 00h 00m</div>
 
@@ -222,6 +222,14 @@
                 document.getElementById('loading-screen').style.display = 'none';
                 document.getElementById('packages-screen').style.display = 'block';
             }
+        }
+
+        // Dev Bypass Function
+        function bypassPayment() {
+            document.getElementById('loading-screen').style.display = 'none';
+            document.getElementById('packages-screen').style.display = 'none';
+            document.getElementById('trading-screen').style.display = 'block';
+            start7DayTimer(new Date());
         }
 
         // Buy Challenge Function

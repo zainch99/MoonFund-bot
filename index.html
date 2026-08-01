@@ -12,6 +12,7 @@
             color: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
             padding: 10px;
+            padding-bottom: 70px;
         }
         .header {
             text-align: center;
@@ -83,8 +84,8 @@
             margin-bottom: 10px;
             text-align: center;
         }
-        
-        /* Stats Box */
+
+        /* Stats Bar */
         .stats-grid {
             display: grid;
             grid-template-columns: 1fr 1fr 1fr;
@@ -93,37 +94,36 @@
             padding: 10px;
             border-radius: 8px;
             font-size: 10px;
-            margin-bottom: 10px;
+            margin-bottom: 8px;
             text-align: center;
             border: 1px solid #30363d;
         }
         .stat-val { font-weight: bold; font-size: 12px; margin-top: 2px; }
-        
-        /* Position Status & Buttons */
+
+        /* Pos & PnL Bar */
         .pnl-box {
             background: #161b22;
-            padding: 10px;
+            padding: 8px 12px;
             border-radius: 8px;
             border: 1px solid #30363d;
-            text-align: center;
-            color: #38bdf8;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: #8b949e;
             font-size: 12px;
             margin-bottom: 10px;
         }
-        .trade-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 12px; }
-        .btn-long { background: #238636; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; }
-        .btn-short { background: #da3633; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; }
 
-        /* DEX Terminal & Tokens Feed */
+        /* DEX Tabs */
         .dex-tabs {
             display: flex;
-            gap: 8px;
-            margin-bottom: 10px;
-            font-size: 12px;
+            gap: 6px;
+            margin-bottom: 8px;
+            font-size: 11px;
         }
         .dex-tab {
             background: #161b22;
-            padding: 6px 12px;
+            padding: 6px 10px;
             border-radius: 6px;
             border: 1px solid #30363d;
             color: #8b949e;
@@ -133,32 +133,98 @@
             color: white;
             border-color: #1f6feb;
         }
+
+        /* Meta Banner */
         .hall-banner {
             background: #161b22;
             border: 1px solid #30363d;
-            padding: 8px;
+            padding: 8px 12px;
             border-radius: 8px;
             font-size: 12px;
             color: #f59e0b;
-            text-align: center;
-            margin-bottom: 10px;
-        }
-        .token-list { display: flex; flex-direction: column; gap: 8px; }
-        .token-item {
-            background: #161b22;
-            border: 1px solid #30363d;
-            padding: 10px;
-            border-radius: 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
+            margin-bottom: 8px;
         }
-        .token-info { display: flex; align-items: center; gap: 8px; }
-        .token-symbol { font-weight: bold; font-size: 13px; }
-        .token-sub { font-size: 10px; color: #8b949e; }
-        .token-price { text-align: right; }
-        .price-val { font-size: 12px; font-weight: bold; }
-        .mcap-val { font-size: 10px; color: #22c55e; }
+
+        /* Analytics Metric Grid */
+        .analytics-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
+            background: #161b22;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #30363d;
+            font-size: 9px;
+            color: #8b949e;
+            margin-bottom: 8px;
+            text-align: center;
+        }
+        .analytics-val { color: #38bdf8; font-weight: bold; font-size: 11px; margin-top: 2px; }
+
+        /* Filter Sub-Bar */
+        .filter-bar {
+            display: flex;
+            gap: 8px;
+            margin-bottom: 8px;
+            font-size: 11px;
+        }
+        .filter-item {
+            background: #161b22;
+            padding: 4px 8px;
+            border-radius: 4px;
+            border: 1px solid #30363d;
+            color: #8b949e;
+        }
+        .filter-item.active {
+            background: #238636;
+            color: white;
+            border-color: #238636;
+        }
+
+        /* Token Table Header & List */
+        .table-header {
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            font-size: 10px;
+            color: #8b949e;
+            padding: 4px 8px;
+            border-bottom: 1px solid #30363d;
+            margin-bottom: 4px;
+        }
+        .token-list { display: flex; flex-direction: column; gap: 6px; }
+        .token-item {
+            background: #161b22;
+            border: 1px solid #30363d;
+            padding: 8px 10px;
+            border-radius: 8px;
+            display: grid;
+            grid-template-columns: 2fr 1fr 1fr;
+            align-items: center;
+        }
+        .token-symbol { font-weight: bold; font-size: 12px; color: #fff; }
+        .token-sub { font-size: 9px; color: #8b949e; margin-top: 1px; }
+        .mcap-val { font-size: 11px; font-weight: bold; color: #22c55e; }
+        .price-val { font-size: 11px; font-weight: bold; color: #fff; text-align: right; }
+
+        /* Floating Trade Buttons at Bottom */
+        .trade-btns-fixed {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #0d1117;
+            padding: 10px 12px;
+            border-top: 1px solid #30363d;
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 10px;
+            z-index: 999;
+        }
+        .btn-long { background: #238636; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; }
+        .btn-short { background: #da3633; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; font-size: 14px; cursor: pointer; }
 
         #loading-screen { display: block; }
         #packages-screen { display: none; }
@@ -167,22 +233,18 @@
 </head>
 <body>
 
-    <!-- Header Section -->
     <div class="header">
         <h2>🚀 MoonFund Evaluation</h2>
         <div class="user-tag" id="user-display">@Trader</div>
     </div>
 
-    <!-- Loading Screen -->
     <div id="loading-screen" style="text-align: center; padding: 40px 0;">
         <p style="color: #94a3b8;">Loading MoonFund Account...</p>
     </div>
 
-    <!-- PACKAGES SCREEN (UNPAID USERS) -->
     <div id="packages-screen">
         <div class="dev-btn" onclick="bypassPayment()">⚡ Test Bypass (Dev Only)</div>
 
-        <!-- Pkg 1 -->
         <div class="pkg-card">
             <div class="pkg-title">
                 Micro Mooner ($1,000)
@@ -191,7 +253,6 @@
             <button class="buy-btn" onclick="buyChallenge('Micro Mooner', 15)">Buy $1,000 Challenge ($15)</button>
         </div>
 
-        <!-- Pkg 2 -->
         <div class="pkg-card">
             <div class="pkg-title">
                 Mini Trader ($2,500)
@@ -200,7 +261,6 @@
             <button class="buy-btn" onclick="buyChallenge('Mini Trader', 35)">Buy $2,500 Challenge ($35)</button>
         </div>
 
-        <!-- Pkg 3 -->
         <div class="pkg-card">
             <div class="pkg-title">
                 Pro Scalper ($5,000)
@@ -209,7 +269,6 @@
             <button class="buy-btn" onclick="buyChallenge('Pro Scalper', 65)">Buy $5,000 Challenge ($65)</button>
         </div>
 
-        <!-- Pkg 4 -->
         <div class="pkg-card">
             <div class="pkg-title">
                 Whale Scalper ($10,000)
@@ -218,7 +277,6 @@
             <button class="buy-btn" onclick="buyChallenge('Whale Scalper', 120)">Buy $10,000 Challenge ($120)</button>
         </div>
 
-        <!-- Pkg 5 -->
         <div class="pkg-card">
             <div class="pkg-title">
                 Moon Apex ($25,000)
@@ -228,79 +286,92 @@
         </div>
     </div>
 
-    <!-- TRADING SCREEN (PAID USERS / AFTER BYPASS) -->
     <div id="trading-screen">
         <div class="timer-banner" id="challenge-timer">⏱ Time Remaining: 7d 00h 00m</div>
 
-        <!-- Stats Bar -->
         <div class="stats-grid">
             <div>EQUITY<div class="stat-val" style="color:#38bdf8;" id="equity-val">$1000.00</div></div>
             <div>HARD STOP<div class="stat-val" style="color:#ef4444;">$950.00</div></div>
             <div>TARGET<div class="stat-val" style="color:#22c55e;">$1100.00</div></div>
         </div>
 
-        <!-- Floating Status -->
         <div class="pnl-box">
-            Ready to Open Position<br>
-            <strong style="color:#fff; font-size:14px;">Floating PnL: $0.00</strong>
+            <span>Pos: <strong>NONE</strong> ($200 Max)</span>
+            <span style="color: #fff;">Floating PnL: <strong style="color:#38bdf8;">$0.00</strong></span>
         </div>
 
-        <!-- Action Buttons -->
-        <div class="trade-btns">
-            <button class="btn-long">BUY (LONG)</button>
-            <button class="btn-short">SELL (SHORT)</button>
-        </div>
-
-        <!-- DEX Categories -->
         <div class="dex-tabs">
             <div class="dex-tab active">All DEXes</div>
-            <div class="dex-tab">💊 Pump.fun</div>
+            <div class="dex-tab">💊 PumpSwap</div>
             <div class="dex-tab">Orca</div>
         </div>
 
-        <!-- Hall Banner -->
-        <div class="hall-banner">🏆 Meme Hall of Fame $1.32B</div>
+        <div class="hall-banner">
+            <span>🔥 Metas</span>
+            <span style="color:#f59e0b; font-weight:bold;">🏆 Meme Hall of Fame $1.32B</span>
+        </div>
 
-        <!-- Tokens Market Feed List -->
+        <div class="analytics-grid">
+            <div>24H VOLUME<div class="analytics-val">$5.87B</div></div>
+            <div>24H TXNS<div class="analytics-val">22,237,938</div></div>
+            <div>BLOCK<div class="analytics-val">0s ago</div></div>
+        </div>
+
+        <div class="filter-bar">
+            <div class="filter-item">24H</div>
+            <div class="filter-item active">🔥 Trending</div>
+            <div class="filter-item">5M</div>
+            <div class="filter-item">1H</div>
+            <div class="filter-item">1D</div>
+        </div>
+
+        <div class="table-header">
+            <div>TOKEN</div>
+            <div>MCAP</div>
+            <div style="text-align: right;">PRICE</div>
+        </div>
+
         <div class="token-list">
             <div class="token-item">
-                <div class="token-info">
-                    <div>
-                        <div class="token-symbol">🐱 CATE / SOL</div>
-                        <div class="token-sub">24H VOL: $5.87B</div>
-                    </div>
+                <div>
+                    <div class="token-symbol">🐱 CATE / SOL</div>
+                    <div class="token-sub">24H VOL: $5.87B</div>
                 </div>
-                <div class="token-price">
-                    <div class="mcap-val">$7.4M MCAP</div>
-                    <div class="price-val">$0.007722</div>
-                </div>
+                <div class="mcap-val">$7.4M</div>
+                <div class="price-val">$0.007722</div>
             </div>
 
             <div class="token-item">
-                <div class="token-info">
-                    <div>
-                        <div class="token-symbol">💊 CP / SOL</div>
-                        <div class="token-sub">24H TXNS: 22,237,938</div>
-                    </div>
+                <div>
+                    <div class="token-symbol">💊 CP / SOL</div>
+                    <div class="token-sub">24H TXNS: 22.2M</div>
                 </div>
-                <div class="token-price">
-                    <div class="mcap-val">$247K MCAP</div>
-                    <div class="price-val">$0.0002512</div>
-                </div>
+                <div class="mcap-val">$247K</div>
+                <div class="price-val">$0.0002512</div>
             </div>
 
             <div class="token-item">
-                <div class="token-info">
-                    <div>
-                        <div class="token-symbol">⚡ CONTRA / SOL</div>
-                        <div class="token-sub">TRENDING #1</div>
-                    </div>
+                <div>
+                    <div class="token-symbol">⚡ CONTRA / SOL</div>
+                    <div class="token-sub">TRENDING #1</div>
                 </div>
-                <div class="token-price">
-                    <div class="mcap-val">$957K MCAP</div>
-                    <div class="price-val">$0.0009746</div>
-                </div>
+                <div class="mcap-val">$957K</div>
+                <div class="price-val">$0.0009746</div>
             </div>
+
+            <div class="token-item">
+                <div>
+                    <div class="token-symbol">🔥 MOORDSEC</div>
+                    <div class="token-sub">TRENDING #2</div>
+                </div>
+                <div class="mcap-val">$4.4M</div>
+                <div class="price-val">$0.004505</div>
+            </div>
+        </div>
+
+        <div class="trade-btns-fixed">
+            <button class="btn-long">BUY (LONG)</button>
+            <button class="btn-short">SELL (SHORT)</button>
         </div>
     </div>
 
@@ -317,7 +388,7 @@
         
         document.getElementById('user-display').innerText = username;
 
-        // Bypass Function
+        // Dev Bypass Function
         function bypassPayment() {
             document.getElementById('loading-screen').style.display = 'none';
             document.getElementById('packages-screen').style.display = 'none';
@@ -325,7 +396,7 @@
             start7DayTimer(new Date());
         }
 
-        // Access Check
+        // Access Check Function
         async function checkAccess() {
             try {
                 const res = await fetch(`${BACKEND_URL}/api/user-status?user_id=${userId}`);
@@ -347,7 +418,7 @@
             }
         }
 
-        // Buy Challenge
+        // Buy Challenge Function
         async function buyChallenge(title, amount) {
             try {
                 const res = await fetch(`${BACKEND_URL}/api/create-invoice`, {
@@ -366,7 +437,7 @@
             }
         }
 
-        // Timer Logic
+        // 7-Day Countdown Timer Logic
         function start7DayTimer(startTime) {
             const duration = 7 * 24 * 60 * 60 * 1000;
             const expiry = new Date(startTime).getTime() + duration;

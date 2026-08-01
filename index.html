@@ -82,7 +82,7 @@
 
         .pnl-box {
             background: #161b22;
-            padding: 6px 10px;
+            padding: 8px 10px;
             border-radius: 6px;
             border: 1px solid #30363d;
             display: flex;
@@ -95,7 +95,7 @@
 
         .chart-container {
             width: 100%;
-            height: 250px;
+            height: 230px;
             background: #161b22;
             border: 1px solid #30363d;
             border-radius: 8px;
@@ -103,14 +103,57 @@
             overflow: hidden;
         }
 
+        /* Order Control Section */
+        .order-panel {
+            background: #161b22;
+            border: 1px solid #30363d;
+            padding: 8px;
+            border-radius: 8px;
+            margin-bottom: 8px;
+        }
+        .amount-selector {
+            display: flex;
+            gap: 6px;
+            margin-bottom: 8px;
+        }
+        .amt-btn {
+            flex: 1;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            color: #38bdf8;
+            padding: 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: bold;
+            cursor: pointer;
+            text-align: center;
+        }
+        .amt-btn.active {
+            background: #1f6feb;
+            color: white;
+            border-color: #1f6feb;
+        }
+        .custom-amt-input {
+            width: 100%;
+            background: #0d1117;
+            border: 1px solid #30363d;
+            color: #fff;
+            padding: 6px;
+            border-radius: 4px;
+            font-size: 11px;
+            text-align: center;
+            margin-bottom: 8px;
+            outline: none;
+        }
+
         .trade-btns {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 8px;
-            margin-bottom: 10px;
         }
-        .btn-long { background: #238636; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; }
-        .btn-short { background: #da3633; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; }
+        .btn-long { background: #238636; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; }
+        .btn-short { background: #da3633; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; }
+        .btn-close { background: #d97706; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; width: 100%; display: none; margin-top: 6px; }
 
         .dex-tabs { display: flex; gap: 6px; margin-bottom: 8px; }
         .dex-tab {
@@ -178,7 +221,7 @@
             flex-direction: column;
             gap: 6px;
             margin-bottom: 20px;
-            max-height: 400px;
+            max-height: 350px;
             overflow-y: auto;
         }
         .token-item {
@@ -195,6 +238,23 @@
         .token-sub { font-size: 8px; color: #8b949e; }
         .mcap-val { font-size: 10px; font-weight: bold; color: #22c55e; }
         .price-val { font-size: 10px; font-weight: bold; color: #fff; text-align: right; }
+
+        /* Toast Bar */
+        #toast-bar {
+            position: fixed;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1f6feb;
+            color: #fff;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: bold;
+            display: none;
+            z-index: 9999;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
+        }
 
         #loading-screen { display: block; }
         #packages-screen { display: none; }
@@ -250,17 +310,29 @@
         </div>
 
         <div class="pnl-box">
-            <span>Pos: <strong>NONE</strong> ($200 Max)</span>
-            <span style="color: #fff;">Floating PnL: <strong style="color:#38bdf8;">$0.00</strong></span>
+            <span id="pos-info">Pos: <strong>NONE</strong></span>
+            <span style="color: #fff;">Floating PnL: <strong style="color:#38bdf8;" id="floating-pnl">$0.00</strong></span>
         </div>
 
-        <!-- FAST TRADINGVIEW CHART -->
+        <!-- CHARTS -->
         <div class="chart-container" id="tv_chart_container"></div>
 
-        <!-- BUY / SELL ACTION BUTTONS -->
-        <div class="trade-btns">
-            <button class="btn-long" onclick="executeTrade('BUY')">BUY (LONG)</button>
-            <button class="btn-short" onclick="executeTrade('SELL')">SELL (SHORT)</button>
+        <!-- ORDER CONTROL PANEL -->
+        <div class="order-panel">
+            <div style="font-size: 9px; color: #8b949e; margin-bottom: 4px;">ORDER AMOUNT ($USD):</div>
+            <div class="amount-selector">
+                <div class="amt-btn active" onclick="setAmount(10, this)">$10</div>
+                <div class="amt-btn" onclick="setAmount(50, this)">$50</div>
+                <div class="amt-btn" onclick="setAmount(100, this)">$100</div>
+                <div class="amt-btn" onclick="setAmount(200, this)">$200</div>
+            </div>
+            <input type="number" id="trade-amount" class="custom-amt-input" value="10" placeholder="Enter Custom Amount">
+
+            <div class="trade-btns" id="action-btns">
+                <button class="btn-long" onclick="executeTrade('BUY')">BUY (LONG)</button>
+                <button class="btn-short" onclick="executeTrade('SELL')">SELL (SHORT)</button>
+            </div>
+            <button class="btn-close" id="close-btn" onclick="closePosition()">CLOSE POSITION</button>
         </div>
 
         <!-- DEX TABS -->
@@ -270,20 +342,20 @@
             <div class="dex-tab" onclick="switchDexTab(this, 'orca')">Orca</div>
         </div>
 
-        <!-- HALL OF FAME METAS -->
+        <!-- METAS -->
         <div class="hall-banner">
             <span>🔥 Metas</span>
             <span style="color:#f59e0b; font-weight:bold;">🏆 Meme Hall of Fame $1.32B</span>
         </div>
 
-        <!-- ANALYTICS GRID -->
+        <!-- ANALYTICS -->
         <div class="analytics-grid">
             <div>24H VOLUME<div class="analytics-val">$5.87B</div></div>
             <div>24H TXNS<div class="analytics-val">22,237,938</div></div>
             <div>BLOCK<div class="analytics-val">0s ago</div></div>
         </div>
 
-        <!-- TIMEFRAME FILTERS -->
+        <!-- FILTERS -->
         <div class="filter-bar">
             <div class="filter-item" onclick="switchFilter(this)">24H</div>
             <div class="filter-item active" onclick="switchFilter(this)">🔥 Trending</div>
@@ -298,9 +370,11 @@
             <div style="text-align: right;">PRICE</div>
         </div>
 
-        <!-- TOKEN LIST FEED -->
+        <!-- TOKEN LIST -->
         <div class="token-list" id="token-feed-list"></div>
     </div>
+
+    <div id="toast-bar">Trade Executed</div>
 
     <script>
         const tg = window.Telegram.WebApp;
@@ -313,12 +387,30 @@
         
         document.getElementById('user-display').innerText = username;
 
-        // Generate 200 Dummy Meme Coins
+        // Trade State
+        let accountEquity = 1000.00;
+        let activePosition = null; 
+        let selectedCoin = "SOL";
+        let selectedCoinPrice = 140.0;
+
         const prefixes = ["MOON", "PUMP", "SOL", "PEPE", "DOGE", "CAT", "ELON", "NEO", "APE", "SHIB"];
         const suffixes = ["AI", "INU", "X", "SWAP", "COIN", "DAO", "PRO", "LABS", "FINANCE", "BOY"];
         
         let allCoins = [];
         let currentDexFilter = 'all';
+
+        function showToast(msg) {
+            const toast = document.getElementById('toast-bar');
+            toast.innerText = msg;
+            toast.style.display = 'block';
+            setTimeout(() => { toast.style.display = 'none'; }, 2000);
+        }
+
+        function setAmount(amt, el) {
+            document.querySelectorAll('.amt-btn').forEach(b => b.classList.remove('active'));
+            if(el) el.classList.add('active');
+            document.getElementById('trade-amount').value = amt;
+        }
 
         function generateDummyCoins() {
             allCoins = [];
@@ -331,11 +423,17 @@
                     id: i,
                     symbol: `${p}${s}`,
                     dex: dex,
-                    mcap: (Math.random() * 500 + 10).toFixed(1), // $10K to $500K
+                    mcap: (Math.random() * 500 + 10).toFixed(1),
                     price: (Math.random() * 0.005 + 0.00001).toFixed(6),
                     vol: (Math.random() * 50 + 1).toFixed(1)
                 });
             }
+        }
+
+        function selectToken(symbol, price) {
+            selectedCoin = symbol;
+            selectedCoinPrice = parseFloat(price);
+            showToast(`Selected: ${symbol}`);
         }
 
         function renderCoins() {
@@ -347,7 +445,7 @@
             filtered.forEach(coin => {
                 const item = document.createElement('div');
                 item.className = 'token-item';
-                item.onclick = () => initChart('BINANCE:SOLUSDT');
+                item.onclick = () => selectToken(coin.symbol, coin.price);
                 item.innerHTML = `
                     <div>
                         <div class="token-symbol">${coin.dex === 'pumpswap' ? '💊' : '⚡'} ${coin.symbol} / SOL</div>
@@ -360,29 +458,82 @@
             });
         }
 
-        // Price Fluctuation Animation
         function startLivePriceUpdates() {
             setInterval(() => {
                 allCoins.forEach(coin => {
-                    const delta = (Math.random() - 0.49) * 0.05; // -2.5% to +2.5%
+                    const delta = (Math.random() - 0.49) * 0.05; 
                     let currentPrice = parseFloat(coin.price);
                     currentPrice = Math.max(0.000001, currentPrice * (1 + delta));
                     coin.price = currentPrice.toFixed(6);
 
-                    let currentMcap = parseFloat(coin.mcap);
-                    currentMcap = Math.max(1, currentMcap * (1 + delta));
-                    coin.mcap = currentMcap.toFixed(1);
+                    if (coin.symbol === selectedCoin) {
+                        selectedCoinPrice = currentPrice;
+                    }
 
                     const priceEl = document.getElementById(`price-${coin.id}`);
-                    const mcapEl = document.getElementById(`mcap-${coin.id}`);
-
-                    if (priceEl && mcapEl) {
+                    if (priceEl) {
                         priceEl.innerText = `$${coin.price}`;
-                        mcapEl.innerText = `$${coin.mcap}K`;
                         priceEl.style.color = delta >= 0 ? '#22c55e' : '#ef4444';
                     }
                 });
-            }, 2000);
+
+                // Update Position PnL dynamically
+                if (activePosition) {
+                    const priceDiff = (selectedCoinPrice - activePosition.entryPrice) / activePosition.entryPrice;
+                    let pnl = activePosition.type === 'BUY' ? activePosition.amount * priceDiff : activePosition.amount * (-priceDiff);
+                    activePosition.currentPnL = pnl;
+
+                    const pnlEl = document.getElementById('floating-pnl');
+                    pnlEl.innerText = `${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}`;
+                    pnlEl.style.color = pnl >= 0 ? '#22c55e' : '#ef4444';
+                }
+            }, 1500);
+        }
+
+        function executeTrade(type) {
+            if (activePosition) {
+                showToast("Close existing position first!");
+                return;
+            }
+
+            const amt = parseFloat(document.getElementById('trade-amount').value);
+            if (isNaN(amt) || amt <= 0 || amt > 200) {
+                showToast("Max Trade Amount is $200!");
+                return;
+            }
+
+            activePosition = {
+                symbol: selectedCoin,
+                type: type,
+                amount: amt,
+                entryPrice: selectedCoinPrice,
+                currentPnL: 0.0
+            };
+
+            document.getElementById('pos-info').innerHTML = `Pos: <strong style="color:${type === 'BUY' ? '#22c55e' : '#ef4444'};">${type} $${amt} (${selectedCoin})</strong>`;
+            document.getElementById('action-btns').style.display = 'none';
+            document.getElementById('close-btn').style.display = 'block';
+
+            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
+            showToast(`${type} Order Placed!`);
+        }
+
+        function closePosition() {
+            if (!activePosition) return;
+
+            accountEquity += activePosition.currentPnL;
+            document.getElementById('equity-val').innerText = `$${accountEquity.toFixed(2)}`;
+
+            activePosition = null;
+            document.getElementById('pos-info').innerHTML = `Pos: <strong>NONE</strong>`;
+            document.getElementById('floating-pnl').innerText = `$0.00`;
+            document.getElementById('floating-pnl').style.color = `#38bdf8`;
+
+            document.getElementById('action-btns').style.display = 'grid';
+            document.getElementById('close-btn').style.display = 'none';
+
+            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
+            showToast("Position Closed");
         }
 
         function switchDexTab(el, dexType) {
@@ -455,10 +606,10 @@
                 if (data.ok && data.result?.pay_url) {
                     tg.openTelegramLink(data.result.pay_url);
                 } else {
-                    alert("Invoice Generation Failed");
+                    showToast("Payment Failed");
                 }
             } catch (e) {
-                alert("Payment Server Error");
+                showToast("Server Error");
             }
         }
 
@@ -483,11 +634,6 @@
         function switchFilter(el) {
             document.querySelectorAll('.filter-item').forEach(f => f.classList.remove('active'));
             el.classList.add('active');
-        }
-
-        function executeTrade(type) {
-            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-            alert(`${type} Order Executed Successfully!`);
         }
 
         checkAccess();

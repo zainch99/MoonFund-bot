@@ -38,6 +38,7 @@
             border-radius: 8px;
             margin: 10px 0 15px 0;
             font-size: 13px;
+            text-align: center;
         }
         .pkg-card {
             background: #161b22;
@@ -108,22 +109,18 @@
 </head>
 <body>
 
-    <!-- Header Section -->
     <div class="header">
         <h2>🚀 MoonFund Evaluation</h2>
         <div class="user-tag" id="user-display">@User</div>
     </div>
 
-    <!-- Loading Screen -->
     <div id="loading-screen" style="display: block; text-align: center; padding: 40px 0;">
         <p style="color: #94a3b8;">Loading MoonFund Account...</p>
     </div>
 
-    <!-- PACKAGES SCREEN (UNPAID USERS) -->
     <div id="packages-screen">
         <div class="dev-btn">⚡ Test Bypass (Dev Only)</div>
 
-        <!-- Pkg 1 -->
         <div class="pkg-card">
             <div class="pkg-title">
                 Micro Mooner ($1,000)
@@ -133,7 +130,6 @@
             <button class="buy-btn" onclick="buyChallenge('Micro Mooner', 15)">Buy $1,000 Challenge ($15)</button>
         </div>
 
-        <!-- Pkg 2 -->
         <div class="pkg-card">
             <div class="pkg-title">
                 Mini Trader ($2,500)
@@ -143,7 +139,15 @@
             <button class="buy-btn" onclick="buyChallenge('Mini Trader', 35)">Buy $2,500 Challenge ($35)</button>
         </div>
 
-        <!-- Pkg 3 -->
+        <div class="pkg-card">
+            <div class="pkg-title">
+                Pro Scalper ($5,000)
+                <span class="pkg-price-badge">$65</span>
+            </div>
+            <div class="pkg-details">• Target: $500 (10%) | Max Loss: 5% ($4,750 Stop)</div>
+            <button class="buy-btn" onclick="buyChallenge('Pro Scalper', 65)">Buy $5,000 Challenge ($65)</button>
+        </div>
+
         <div class="pkg-card">
             <div class="pkg-title">
                 Whale Scalper ($10,000)
@@ -153,7 +157,6 @@
             <button class="buy-btn" onclick="buyChallenge('Whale Scalper', 120)">Buy $10,000 Challenge ($120)</button>
         </div>
 
-        <!-- Pkg 4 -->
         <div class="pkg-card">
             <div class="pkg-title">
                 Moon Apex ($25,000)
@@ -164,7 +167,6 @@
         </div>
     </div>
 
-    <!-- TRADING SCREEN (PAID USERS) -->
     <div id="trading-screen">
         <div class="timer-banner" id="challenge-timer">⏱ Time Remaining: 7d 00h 00m</div>
 
@@ -217,7 +219,6 @@
                 }
             } catch (e) {
                 console.error("Access Check Error:", e);
-                // Fallback to packages view if network error
                 document.getElementById('loading-screen').style.display = 'none';
                 document.getElementById('packages-screen').style.display = 'block';
             }

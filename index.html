@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MoonFund</title>
+    <title>MoonFund Terminal</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
@@ -11,13 +11,13 @@
             background-color: #0d1117;
             color: #ffffff;
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            padding: 10px;
-            padding-bottom: 80px;
+            padding: 8px;
         }
-        .header { text-align: center; margin-bottom: 8px; }
+        .header { text-align: center; margin-bottom: 6px; }
         .header h2 { font-size: 16px; color: #38bdf8; }
         .user-tag { font-size: 11px; color: #94a3b8; }
         
+        /* Dev & Packages Screen */
         .dev-btn {
             background: #f59e0b;
             color: #000;
@@ -32,7 +32,7 @@
         .pkg-card {
             background: #161b22;
             border: 1px solid #30363d;
-            border-radius: 12px;
+            border-radius: 10px;
             padding: 12px;
             margin-bottom: 10px;
         }
@@ -56,6 +56,7 @@
             cursor: pointer;
         }
 
+        /* Timer & Stats Top Bar */
         .timer-banner {
             background: #d97706;
             color: #fff;
@@ -63,7 +64,7 @@
             border-radius: 6px;
             font-weight: bold;
             font-size: 11px;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
             text-align: center;
         }
         .stats-grid {
@@ -71,8 +72,8 @@
             grid-template-columns: 1fr 1fr 1fr;
             gap: 4px;
             background: #161b22;
-            padding: 8px;
-            border-radius: 8px;
+            padding: 6px;
+            border-radius: 6px;
             font-size: 9px;
             margin-bottom: 6px;
             text-align: center;
@@ -82,8 +83,8 @@
 
         .pnl-box {
             background: #161b22;
-            padding: 8px 10px;
-            border-radius: 8px;
+            padding: 6px 10px;
+            border-radius: 6px;
             border: 1px solid #30363d;
             display: flex;
             justify-content: space-between;
@@ -93,6 +94,34 @@
             margin-bottom: 8px;
         }
 
+        /* DexScreener Chart Container */
+        .chart-container {
+            width: 100%;
+            height: 280px;
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 8px;
+            margin-bottom: 8px;
+            overflow: hidden;
+            position: relative;
+        }
+        .chart-container iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        /* Buy / Sell Buttons */
+        .trade-btns {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+        .btn-long { background: #238636; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; }
+        .btn-short { background: #da3633; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; }
+
+        /* DEX Tabs */
         .dex-tabs { display: flex; gap: 6px; margin-bottom: 8px; }
         .dex-tab {
             background: #161b22;
@@ -154,7 +183,7 @@
             border-bottom: 1px solid #30363d;
             margin-bottom: 4px;
         }
-        .token-list { display: flex; flex-direction: column; gap: 6px; }
+        .token-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
         .token-item {
             background: #161b22;
             border: 1px solid #30363d;
@@ -169,22 +198,6 @@
         .token-sub { font-size: 8px; color: #8b949e; }
         .mcap-val { font-size: 10px; font-weight: bold; color: #22c55e; }
         .price-val { font-size: 10px; font-weight: bold; color: #fff; text-align: right; }
-
-        .trade-btns-fixed {
-            position: fixed;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            background: #0d1117;
-            padding: 8px 10px;
-            border-top: 1px solid #30363d;
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-            z-index: 9999;
-        }
-        .btn-long { background: #238636; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; }
-        .btn-short { background: #da3633; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; }
 
         #loading-screen { display: block; }
         #packages-screen { display: none; }
@@ -202,7 +215,6 @@
         <p style="color: #94a3b8;">Loading MoonFund Account...</p>
     </div>
 
-    <!-- PACKAGES -->
     <div id="packages-screen">
         <div class="dev-btn" onclick="bypassPayment()">⚡ Test Bypass (Dev Only)</div>
 
@@ -228,7 +240,6 @@
         </div>
     </div>
 
-    <!-- TRADING TERMINAL -->
     <div id="trading-screen">
         <div class="timer-banner" id="challenge-timer">⏱ Time Remaining: 7d 00h 00m</div>
 
@@ -241,6 +252,15 @@
         <div class="pnl-box">
             <span>Pos: <strong>NONE</strong> ($200 Max)</span>
             <span style="color: #fff;">Floating PnL: <strong style="color:#38bdf8;">$0.00</strong></span>
+        </div>
+
+        <div class="chart-container">
+            <iframe id="dex-chart" src="https://dexscreener.com/solana/58f15g239s1f238?embed=1&theme=dark&trades=0&info=0"></iframe>
+        </div>
+
+        <div class="trade-btns">
+            <button class="btn-long" onclick="executeTrade('BUY')">BUY (LONG)</button>
+            <button class="btn-short" onclick="executeTrade('SELL')">SELL (SHORT)</button>
         </div>
 
         <div class="dex-tabs">
@@ -275,7 +295,7 @@
         </div>
 
         <div class="token-list">
-            <div class="token-item" onclick="selectToken('CATE')">
+            <div class="token-item" onclick="loadChart('solana/cate')">
                 <div>
                     <div class="token-symbol">🐱 CATE / SOL</div>
                     <div class="token-sub">24H VOL: $5.87B</div>
@@ -284,7 +304,7 @@
                 <div class="price-val">$0.007722</div>
             </div>
 
-            <div class="token-item" onclick="selectToken('CP')">
+            <div class="token-item" onclick="loadChart('solana/cp')">
                 <div>
                     <div class="token-symbol">💊 CP / SOL</div>
                     <div class="token-sub">24H TXNS: 22.2M</div>
@@ -293,7 +313,7 @@
                 <div class="price-val">$0.0002512</div>
             </div>
 
-            <div class="token-item" onclick="selectToken('CONTRA')">
+            <div class="token-item" onclick="loadChart('solana/contra')">
                 <div>
                     <div class="token-symbol">⚡ CONTRA / SOL</div>
                     <div class="token-sub">TRENDING #1</div>
@@ -302,7 +322,7 @@
                 <div class="price-val">$0.0009746</div>
             </div>
 
-            <div class="token-item" onclick="selectToken('MOORDSEC')">
+            <div class="token-item" onclick="loadChart('solana/moordsec')">
                 <div>
                     <div class="token-symbol">🔥 MOORDSEC</div>
                     <div class="token-sub">TRENDING #2</div>
@@ -310,11 +330,6 @@
                 <div class="mcap-val">$4.4M</div>
                 <div class="price-val">$0.004505</div>
             </div>
-        </div>
-
-        <div class="trade-btns-fixed">
-            <button class="btn-long" onclick="executeTrade('LONG')">BUY (LONG)</button>
-            <button class="btn-short" onclick="executeTrade('SHORT')">SELL (SHORT)</button>
         </div>
     </div>
 
@@ -401,12 +416,13 @@
             el.classList.add('active');
         }
 
-        function selectToken(symbol) {
-            tg.HapticFeedback.impactOccurred('light');
+        function loadChart(pairPath) {
+            document.getElementById('dex-chart').src = `https://dexscreener.com/${pairPath}?embed=1&theme=dark&trades=0&info=0`;
+            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
         }
 
         function executeTrade(type) {
-            tg.HapticFeedback.notificationOccurred('success');
+            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
             alert(`${type} Order Executed Successfully!`);
         }
 

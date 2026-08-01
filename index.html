@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MoonFund Terminal</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <!-- TradingView Widget Script -->
     <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
@@ -19,7 +18,6 @@
         .header h2 { font-size: 16px; color: #38bdf8; }
         .user-tag { font-size: 11px; color: #94a3b8; }
         
-        /* Dev & Packages Screen */
         .dev-btn {
             background: #f59e0b;
             color: #000;
@@ -58,7 +56,6 @@
             cursor: pointer;
         }
 
-        /* Timer & Stats Top Bar */
         .timer-banner {
             background: #d97706;
             color: #fff;
@@ -96,7 +93,6 @@
             margin-bottom: 8px;
         }
 
-        /* Chart Container */
         .chart-container {
             width: 100%;
             height: 250px;
@@ -107,7 +103,6 @@
             overflow: hidden;
         }
 
-        /* Buy / Sell Buttons */
         .trade-btns {
             display: grid;
             grid-template-columns: 1fr 1fr;
@@ -117,7 +112,6 @@
         .btn-long { background: #238636; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; }
         .btn-short { background: #da3633; color: white; padding: 12px; border: none; border-radius: 6px; font-weight: bold; font-size: 14px; cursor: pointer; }
 
-        /* DEX Tabs */
         .dex-tabs { display: flex; gap: 6px; margin-bottom: 8px; }
         .dex-tab {
             background: #161b22;
@@ -179,7 +173,14 @@
             border-bottom: 1px solid #30363d;
             margin-bottom: 4px;
         }
-        .token-list { display: flex; flex-direction: column; gap: 6px; margin-bottom: 20px; }
+        .token-list {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+            margin-bottom: 20px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
         .token-item {
             background: #161b22;
             border: 1px solid #30363d;
@@ -264,9 +265,9 @@
 
         <!-- DEX TABS -->
         <div class="dex-tabs">
-            <div class="dex-tab active" onclick="switchTab(this)">All DEXes</div>
-            <div class="dex-tab" onclick="switchTab(this)">💊 PumpSwap</div>
-            <div class="dex-tab" onclick="switchTab(this)">Orca</div>
+            <div class="dex-tab active" onclick="switchDexTab(this, 'all')">All DEXes</div>
+            <div class="dex-tab" onclick="switchDexTab(this, 'pumpswap')">💊 PumpSwap</div>
+            <div class="dex-tab" onclick="switchDexTab(this, 'orca')">Orca</div>
         </div>
 
         <!-- HALL OF FAME METAS -->
@@ -298,43 +299,7 @@
         </div>
 
         <!-- TOKEN LIST FEED -->
-        <div class="token-list">
-            <div class="token-item" onclick="initChart('BINANCE:SOLUSDT')">
-                <div>
-                    <div class="token-symbol">🐱 CATE / SOL</div>
-                    <div class="token-sub">24H VOL: $5.87B</div>
-                </div>
-                <div class="mcap-val">$7.4M</div>
-                <div class="price-val">$0.007722</div>
-            </div>
-
-            <div class="token-item" onclick="initChart('BINANCE:SOLUSDT')">
-                <div>
-                    <div class="token-symbol">💊 CP / SOL</div>
-                    <div class="token-sub">24H TXNS: 22.2M</div>
-                </div>
-                <div class="mcap-val">$247K</div>
-                <div class="price-val">$0.0002512</div>
-            </div>
-
-            <div class="token-item" onclick="initChart('BINANCE:SOLUSDT')">
-                <div>
-                    <div class="token-symbol">⚡ CONTRA / SOL</div>
-                    <div class="token-sub">TRENDING #1</div>
-                </div>
-                <div class="mcap-val">$957K</div>
-                <div class="price-val">$0.0009746</div>
-            </div>
-
-            <div class="token-item" onclick="initChart('BINANCE:SOLUSDT')">
-                <div>
-                    <div class="token-symbol">🔥 MOORDSEC</div>
-                    <div class="token-sub">TRENDING #2</div>
-                </div>
-                <div class="mcap-val">$4.4M</div>
-                <div class="price-val">$0.004505</div>
-            </div>
-        </div>
+        <div class="token-list" id="token-feed-list"></div>
     </div>
 
     <script>
@@ -348,11 +313,93 @@
         
         document.getElementById('user-display').innerText = username;
 
+        // Generate 200 Dummy Meme Coins
+        const prefixes = ["MOON", "PUMP", "SOL", "PEPE", "DOGE", "CAT", "ELON", "NEO", "APE", "SHIB"];
+        const suffixes = ["AI", "INU", "X", "SWAP", "COIN", "DAO", "PRO", "LABS", "FINANCE", "BOY"];
+        
+        let allCoins = [];
+        let currentDexFilter = 'all';
+
+        function generateDummyCoins() {
+            allCoins = [];
+            for (let i = 1; i <= 200; i++) {
+                const p = prefixes[Math.floor(Math.random() * prefixes.length)];
+                const s = suffixes[Math.floor(Math.random() * suffixes.length)];
+                const dex = (i % 2 === 0) ? 'pumpswap' : 'orca';
+                
+                allCoins.push({
+                    id: i,
+                    symbol: `${p}${s}`,
+                    dex: dex,
+                    mcap: (Math.random() * 500 + 10).toFixed(1), // $10K to $500K
+                    price: (Math.random() * 0.005 + 0.00001).toFixed(6),
+                    vol: (Math.random() * 50 + 1).toFixed(1)
+                });
+            }
+        }
+
+        function renderCoins() {
+            const container = document.getElementById('token-feed-list');
+            container.innerHTML = '';
+
+            const filtered = allCoins.filter(c => currentDexFilter === 'all' || c.dex === currentDexFilter);
+
+            filtered.forEach(coin => {
+                const item = document.createElement('div');
+                item.className = 'token-item';
+                item.onclick = () => initChart('BINANCE:SOLUSDT');
+                item.innerHTML = `
+                    <div>
+                        <div class="token-symbol">${coin.dex === 'pumpswap' ? '💊' : '⚡'} ${coin.symbol} / SOL</div>
+                        <div class="token-sub">24H VOL: $${coin.vol}M</div>
+                    </div>
+                    <div class="mcap-val" id="mcap-${coin.id}">$${coin.mcap}K</div>
+                    <div class="price-val" id="price-${coin.id}">$${coin.price}</div>
+                `;
+                container.appendChild(item);
+            });
+        }
+
+        // Price Fluctuation Animation
+        function startLivePriceUpdates() {
+            setInterval(() => {
+                allCoins.forEach(coin => {
+                    const delta = (Math.random() - 0.49) * 0.05; // -2.5% to +2.5%
+                    let currentPrice = parseFloat(coin.price);
+                    currentPrice = Math.max(0.000001, currentPrice * (1 + delta));
+                    coin.price = currentPrice.toFixed(6);
+
+                    let currentMcap = parseFloat(coin.mcap);
+                    currentMcap = Math.max(1, currentMcap * (1 + delta));
+                    coin.mcap = currentMcap.toFixed(1);
+
+                    const priceEl = document.getElementById(`price-${coin.id}`);
+                    const mcapEl = document.getElementById(`mcap-${coin.id}`);
+
+                    if (priceEl && mcapEl) {
+                        priceEl.innerText = `$${coin.price}`;
+                        mcapEl.innerText = `$${coin.mcap}K`;
+                        priceEl.style.color = delta >= 0 ? '#22c55e' : '#ef4444';
+                    }
+                });
+            }, 2000);
+        }
+
+        function switchDexTab(el, dexType) {
+            document.querySelectorAll('.dex-tab').forEach(t => t.classList.remove('active'));
+            el.classList.add('active');
+            currentDexFilter = dexType;
+            renderCoins();
+        }
+
         function bypassPayment() {
             document.getElementById('loading-screen').style.display = 'none';
             document.getElementById('packages-screen').style.display = 'none';
             document.getElementById('trading-screen').style.display = 'block';
             initChart('BINANCE:SOLUSDT');
+            generateDummyCoins();
+            renderCoins();
+            startLivePriceUpdates();
             start7DayTimer(new Date());
         }
 
@@ -365,6 +412,9 @@
                     document.getElementById('packages-screen').style.display = 'none';
                     document.getElementById('trading-screen').style.display = 'block';
                     initChart('BINANCE:SOLUSDT');
+                    generateDummyCoins();
+                    renderCoins();
+                    startLivePriceUpdates();
                     start7DayTimer(data.start_time || new Date());
                 } else {
                     document.getElementById('packages-screen').style.display = 'block';
@@ -428,11 +478,6 @@
                 const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
                 document.getElementById('challenge-timer').innerText = `⏱ Time Remaining: ${days}d ${hours}h ${mins}m`;
             }, 1000);
-        }
-
-        function switchTab(el) {
-            document.querySelectorAll('.dex-tab').forEach(t => t.classList.remove('active'));
-            el.classList.add('active');
         }
 
         function switchFilter(el) {

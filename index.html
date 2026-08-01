@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MoonFund Terminal</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <!-- TradingView Widget Script -->
+    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         body {
@@ -94,21 +96,15 @@
             margin-bottom: 8px;
         }
 
-        /* DexScreener Chart Container */
+        /* Chart Container */
         .chart-container {
             width: 100%;
-            height: 280px;
+            height: 250px;
             background: #161b22;
             border: 1px solid #30363d;
             border-radius: 8px;
             margin-bottom: 8px;
             overflow: hidden;
-            position: relative;
-        }
-        .chart-container iframe {
-            width: 100%;
-            height: 100%;
-            border: none;
         }
 
         /* Buy / Sell Buttons */
@@ -211,10 +207,12 @@
         <div class="user-tag" id="user-display">@Trader</div>
     </div>
 
+    <!-- LOADING SCREEN -->
     <div id="loading-screen" style="text-align: center; padding: 40px 0;">
         <p style="color: #94a3b8;">Loading MoonFund Account...</p>
     </div>
 
+    <!-- PACKAGES SCREEN -->
     <div id="packages-screen">
         <div class="dev-btn" onclick="bypassPayment()">⚡ Test Bypass (Dev Only)</div>
 
@@ -240,6 +238,7 @@
         </div>
     </div>
 
+    <!-- TRADING TERMINAL SCREEN -->
     <div id="trading-screen">
         <div class="timer-banner" id="challenge-timer">⏱ Time Remaining: 7d 00h 00m</div>
 
@@ -254,32 +253,36 @@
             <span style="color: #fff;">Floating PnL: <strong style="color:#38bdf8;">$0.00</strong></span>
         </div>
 
-        <div class="chart-container">
-            <iframe id="dex-chart" src="https://dexscreener.com/solana/58f15g239s1f238?embed=1&theme=dark&trades=0&info=0"></iframe>
-        </div>
+        <!-- FAST TRADINGVIEW CHART -->
+        <div class="chart-container" id="tv_chart_container"></div>
 
+        <!-- BUY / SELL ACTION BUTTONS -->
         <div class="trade-btns">
             <button class="btn-long" onclick="executeTrade('BUY')">BUY (LONG)</button>
             <button class="btn-short" onclick="executeTrade('SELL')">SELL (SHORT)</button>
         </div>
 
+        <!-- DEX TABS -->
         <div class="dex-tabs">
             <div class="dex-tab active" onclick="switchTab(this)">All DEXes</div>
             <div class="dex-tab" onclick="switchTab(this)">💊 PumpSwap</div>
             <div class="dex-tab" onclick="switchTab(this)">Orca</div>
         </div>
 
+        <!-- HALL OF FAME METAS -->
         <div class="hall-banner">
             <span>🔥 Metas</span>
             <span style="color:#f59e0b; font-weight:bold;">🏆 Meme Hall of Fame $1.32B</span>
         </div>
 
+        <!-- ANALYTICS GRID -->
         <div class="analytics-grid">
             <div>24H VOLUME<div class="analytics-val">$5.87B</div></div>
             <div>24H TXNS<div class="analytics-val">22,237,938</div></div>
             <div>BLOCK<div class="analytics-val">0s ago</div></div>
         </div>
 
+        <!-- TIMEFRAME FILTERS -->
         <div class="filter-bar">
             <div class="filter-item" onclick="switchFilter(this)">24H</div>
             <div class="filter-item active" onclick="switchFilter(this)">🔥 Trending</div>
@@ -294,8 +297,9 @@
             <div style="text-align: right;">PRICE</div>
         </div>
 
+        <!-- TOKEN LIST FEED -->
         <div class="token-list">
-            <div class="token-item" onclick="loadChart('solana/cate')">
+            <div class="token-item" onclick="initChart('BINANCE:SOLUSDT')">
                 <div>
                     <div class="token-symbol">🐱 CATE / SOL</div>
                     <div class="token-sub">24H VOL: $5.87B</div>
@@ -304,7 +308,7 @@
                 <div class="price-val">$0.007722</div>
             </div>
 
-            <div class="token-item" onclick="loadChart('solana/cp')">
+            <div class="token-item" onclick="initChart('BINANCE:SOLUSDT')">
                 <div>
                     <div class="token-symbol">💊 CP / SOL</div>
                     <div class="token-sub">24H TXNS: 22.2M</div>
@@ -313,7 +317,7 @@
                 <div class="price-val">$0.0002512</div>
             </div>
 
-            <div class="token-item" onclick="loadChart('solana/contra')">
+            <div class="token-item" onclick="initChart('BINANCE:SOLUSDT')">
                 <div>
                     <div class="token-symbol">⚡ CONTRA / SOL</div>
                     <div class="token-sub">TRENDING #1</div>
@@ -322,7 +326,7 @@
                 <div class="price-val">$0.0009746</div>
             </div>
 
-            <div class="token-item" onclick="loadChart('solana/moordsec')">
+            <div class="token-item" onclick="initChart('BINANCE:SOLUSDT')">
                 <div>
                     <div class="token-symbol">🔥 MOORDSEC</div>
                     <div class="token-sub">TRENDING #2</div>
@@ -348,6 +352,7 @@
             document.getElementById('loading-screen').style.display = 'none';
             document.getElementById('packages-screen').style.display = 'none';
             document.getElementById('trading-screen').style.display = 'block';
+            initChart('BINANCE:SOLUSDT');
             start7DayTimer(new Date());
         }
 
@@ -359,6 +364,7 @@
                 if (data.is_paid) {
                     document.getElementById('packages-screen').style.display = 'none';
                     document.getElementById('trading-screen').style.display = 'block';
+                    initChart('BINANCE:SOLUSDT');
                     start7DayTimer(data.start_time || new Date());
                 } else {
                     document.getElementById('packages-screen').style.display = 'block';
@@ -368,6 +374,24 @@
                 document.getElementById('loading-screen').style.display = 'none';
                 document.getElementById('packages-screen').style.display = 'block';
             }
+        }
+
+        function initChart(symbol) {
+            new TradingView.widget({
+                "autosize": true,
+                "symbol": symbol,
+                "interval": "1",
+                "timezone": "Etc/UTC",
+                "theme": "dark",
+                "style": "1",
+                "locale": "en",
+                "toolbar_bg": "#0d1117",
+                "enable_publishing": false,
+                "hide_top_toolbar": true,
+                "hide_legend": true,
+                "save_image": false,
+                "container_id": "tv_chart_container"
+            });
         }
 
         async function buyChallenge(title, amount) {
@@ -414,11 +438,6 @@
         function switchFilter(el) {
             document.querySelectorAll('.filter-item').forEach(f => f.classList.remove('active'));
             el.classList.add('active');
-        }
-
-        function loadChart(pairPath) {
-            document.getElementById('dex-chart').src = `https://dexscreener.com/${pairPath}?embed=1&theme=dark&trades=0&info=0`;
-            if (tg.HapticFeedback) tg.HapticFeedback.impactOccurred('light');
         }
 
         function executeTrade(type) {

@@ -5,7 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MoonFund Terminal</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <script type="text/javascript" src="https://s3.tradingview.com/tv.js"></script>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
         body {
@@ -93,17 +92,28 @@
             margin-bottom: 8px;
         }
 
-        .chart-container {
-            width: 100%;
-            height: 230px;
+        .chart-card {
             background: #161b22;
             border: 1px solid #30363d;
             border-radius: 8px;
+            padding: 8px;
             margin-bottom: 8px;
-            overflow: hidden;
+        }
+        .chart-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 6px;
+        }
+        .chart-symbol { font-size: 13px; font-weight: bold; color: #38bdf8; }
+        .chart-price { font-size: 13px; font-weight: bold; color: #22c55e; }
+        canvas {
+            width: 100%;
+            height: 180px;
+            background: #0d1117;
+            border-radius: 4px;
         }
 
-        /* Order Control Section */
         .order-panel {
             background: #161b22;
             border: 1px solid #30363d;
@@ -221,7 +231,7 @@
             flex-direction: column;
             gap: 6px;
             margin-bottom: 20px;
-            max-height: 350px;
+            max-height: 300px;
             overflow-y: auto;
         }
         .token-item {
@@ -234,12 +244,15 @@
             align-items: center;
             cursor: pointer;
         }
+        .token-item.selected {
+            border-color: #38bdf8;
+            background: #1f2937;
+        }
         .token-symbol { font-weight: bold; font-size: 11px; color: #fff; }
         .token-sub { font-size: 8px; color: #8b949e; }
         .mcap-val { font-size: 10px; font-weight: bold; color: #22c55e; }
         .price-val { font-size: 10px; font-weight: bold; color: #fff; text-align: right; }
 
-        /* Toast Bar */
         #toast-bar {
             position: fixed;
             bottom: 10px;
@@ -253,7 +266,6 @@
             font-weight: bold;
             display: none;
             z-index: 9999;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.5);
         }
 
         #loading-screen { display: block; }
@@ -314,8 +326,14 @@
             <span style="color: #fff;">Floating PnL: <strong style="color:#38bdf8;" id="floating-pnl">$0.00</strong></span>
         </div>
 
-        <!-- CHARTS -->
-        <div class="chart-container" id="tv_chart_container"></div>
+        <!-- DYNAMIC CANVAS CHART -->
+        <div class="chart-card">
+            <div class="chart-header">
+                <span class="chart-symbol" id="chart-title">MOON/SOL</span>
+                <span class="chart-price" id="chart-live-price">$0.001200</span>
+            </div>
+            <canvas id="cryptoCanvas"></canvas>
+        </div>
 
         <!-- ORDER CONTROL PANEL -->
         <div class="order-panel">
@@ -370,7 +388,6 @@
             <div style="text-align: right;">PRICE</div>
         </div>
 
-        <!-- TOKEN LIST -->
         <div class="token-list" id="token-feed-list"></div>
     </div>
 
@@ -387,11 +404,9 @@
         
         document.getElementById('user-display').innerText = username;
 
-        // Trade State
         let accountEquity = 1000.00;
         let activePosition = null; 
-        let selectedCoin = "SOL";
-        let selectedCoinPrice = 140.0;
+        let selectedCoin = null;
 
         const prefixes = ["MOON", "PUMP", "SOL", "PEPE", "DOGE", "CAT", "ELON", "NEO", "APE", "SHIB"];
         const suffixes = ["AI", "INU", "X", "SWAP", "COIN", "DAO", "PRO", "LABS", "FINANCE", "BOY"];
@@ -414,26 +429,44 @@
 
         function generateDummyCoins() {
             allCoins = [];
-            for (let i = 1; i <= 200; i++) {
+            for (let i = 1; i <= 30; i++) {
                 const p = prefixes[Math.floor(Math.random() * prefixes.length)];
                 const s = suffixes[Math.floor(Math.random() * suffixes.length)];
                 const dex = (i % 2 === 0) ? 'pumpswap' : 'orca';
+                const basePrice = Math.random() * 0.005 + 0.0005;
                 
+                let history = [];
+                let current = basePrice;
+                for (let j = 0; j < 30; j++) {
+                    let open = current;
+                    let close = open * (1 + (Math.random() - 0.49) * 0.08);
+                    let high = Math.max(open, close) * (1 + Math.random() * 0.02);
+                    let low = Math.min(open, close) * (1 - Math.random() * 0.02);
+                    history.push({ open, high, low, close });
+                    current = close;
+                }
+
                 allCoins.push({
                     id: i,
                     symbol: `${p}${s}`,
                     dex: dex,
                     mcap: (Math.random() * 500 + 10).toFixed(1),
-                    price: (Math.random() * 0.005 + 0.00001).toFixed(6),
-                    vol: (Math.random() * 50 + 1).toFixed(1)
+                    price: current,
+                    vol: (Math.random() * 50 + 1).toFixed(1),
+                    candles: history
                 });
             }
+            selectedCoin = allCoins[0];
         }
 
-        function selectToken(symbol, price) {
-            selectedCoin = symbol;
-            selectedCoinPrice = parseFloat(price);
-            showToast(`Selected: ${symbol}`);
+        function selectToken(coin) {
+            selectedCoin = coin;
+            document.getElementById('chart-title').innerText = `${coin.symbol} / SOL`;
+            document.getElementById('chart-live-price').innerText = `$${coin.price.toFixed(6)}`;
+            
+            renderCoins();
+            drawChart();
+            showToast(`Loaded: ${coin.symbol}`);
         }
 
         function renderCoins() {
@@ -444,42 +477,91 @@
 
             filtered.forEach(coin => {
                 const item = document.createElement('div');
-                item.className = 'token-item';
-                item.onclick = () => selectToken(coin.symbol, coin.price);
+                item.className = `token-item ${selectedCoin && selectedCoin.id === coin.id ? 'selected' : ''}`;
+                item.onclick = () => selectToken(coin);
                 item.innerHTML = `
                     <div>
                         <div class="token-symbol">${coin.dex === 'pumpswap' ? '💊' : '⚡'} ${coin.symbol} / SOL</div>
                         <div class="token-sub">24H VOL: $${coin.vol}M</div>
                     </div>
-                    <div class="mcap-val" id="mcap-${coin.id}">$${coin.mcap}K</div>
-                    <div class="price-val" id="price-${coin.id}">$${coin.price}</div>
+                    <div class="mcap-val">$${coin.mcap}K</div>
+                    <div class="price-val" id="price-${coin.id}">$${coin.price.toFixed(6)}</div>
                 `;
                 container.appendChild(item);
+            });
+        }
+
+        function drawChart() {
+            if (!selectedCoin) return;
+            const canvas = document.getElementById('cryptoCanvas');
+            const ctx = canvas.getContext('2d');
+
+            canvas.width = canvas.parentElement.clientWidth - 16;
+            canvas.height = 180;
+
+            const w = canvas.width;
+            const h = canvas.height;
+            ctx.clearRect(0, 0, w, h);
+
+            const candles = selectedCoin.candles;
+            let minP = Math.min(...candles.map(c => c.low));
+            let maxP = Math.max(...candles.map(c => c.high));
+            
+            const padding = (maxP - minP) * 0.1 || 0.00001;
+            minP -= padding;
+            maxP += padding;
+
+            const candleWidth = (w - 20) / candles.length;
+
+            candles.forEach((c, idx) => {
+                const x = 10 + idx * candleWidth + candleWidth / 2;
+                const isGreen = c.close >= c.open;
+
+                const yHigh = h - ((c.high - minP) / (maxP - minP)) * h;
+                const yLow = h - ((c.low - minP) / (maxP - minP)) * h;
+                const yOpen = h - ((c.open - minP) / (maxP - minP)) * h;
+                const yClose = h - ((c.close - minP) / (maxP - minP)) * h;
+
+                ctx.strokeStyle = isGreen ? '#22c55e' : '#ef4444';
+                ctx.lineWidth = 1;
+                ctx.beginPath();
+                ctx.moveTo(x, yHigh);
+                ctx.lineTo(x, yLow);
+                ctx.stroke();
+
+                ctx.fillStyle = isGreen ? '#22c55e' : '#ef4444';
+                const bodyY = Math.min(yOpen, yClose);
+                const bodyH = Math.max(Math.abs(yOpen - yClose), 2);
+                ctx.fillRect(x - candleWidth * 0.35, bodyY, candleWidth * 0.7, bodyH);
             });
         }
 
         function startLivePriceUpdates() {
             setInterval(() => {
                 allCoins.forEach(coin => {
-                    const delta = (Math.random() - 0.49) * 0.05; 
-                    let currentPrice = parseFloat(coin.price);
-                    currentPrice = Math.max(0.000001, currentPrice * (1 + delta));
-                    coin.price = currentPrice.toFixed(6);
-
-                    if (coin.symbol === selectedCoin) {
-                        selectedCoinPrice = currentPrice;
-                    }
+                    const delta = (Math.random() - 0.49) * 0.04; 
+                    let lastCandle = coin.candles[coin.candles.length - 1];
+                    let newClose = Math.max(0.000001, lastCandle.close * (1 + delta));
+                    
+                    lastCandle.close = newClose;
+                    lastCandle.high = Math.max(lastCandle.high, newClose);
+                    lastCandle.low = Math.min(lastCandle.low, newClose);
+                    coin.price = newClose;
 
                     const priceEl = document.getElementById(`price-${coin.id}`);
                     if (priceEl) {
-                        priceEl.innerText = `$${coin.price}`;
+                        priceEl.innerText = `$${coin.price.toFixed(6)}`;
                         priceEl.style.color = delta >= 0 ? '#22c55e' : '#ef4444';
                     }
                 });
 
-                // Update Position PnL dynamically
-                if (activePosition) {
-                    const priceDiff = (selectedCoinPrice - activePosition.entryPrice) / activePosition.entryPrice;
+                if (selectedCoin) {
+                    document.getElementById('chart-live-price').innerText = `$${selectedCoin.price.toFixed(6)}`;
+                    drawChart();
+                }
+
+                if (activePosition && activePosition.symbol === selectedCoin.symbol) {
+                    const priceDiff = (selectedCoin.price - activePosition.entryPrice) / activePosition.entryPrice;
                     let pnl = activePosition.type === 'BUY' ? activePosition.amount * priceDiff : activePosition.amount * (-priceDiff);
                     activePosition.currentPnL = pnl;
 
@@ -487,7 +569,7 @@
                     pnlEl.innerText = `${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}`;
                     pnlEl.style.color = pnl >= 0 ? '#22c55e' : '#ef4444';
                 }
-            }, 1500);
+            }, 1200);
         }
 
         function executeTrade(type) {
@@ -503,19 +585,19 @@
             }
 
             activePosition = {
-                symbol: selectedCoin,
+                symbol: selectedCoin.symbol,
                 type: type,
                 amount: amt,
-                entryPrice: selectedCoinPrice,
+                entryPrice: selectedCoin.price,
                 currentPnL: 0.0
             };
 
-            document.getElementById('pos-info').innerHTML = `Pos: <strong style="color:${type === 'BUY' ? '#22c55e' : '#ef4444'};">${type} $${amt} (${selectedCoin})</strong>`;
+            document.getElementById('pos-info').innerHTML = `Pos: <strong style="color:${type === 'BUY' ? '#22c55e' : '#ef4444'};">${type} $${amt} (${selectedCoin.symbol})</strong>`;
             document.getElementById('action-btns').style.display = 'none';
             document.getElementById('close-btn').style.display = 'block';
 
             if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-            showToast(`${type} Order Placed!`);
+            showToast(`${type} Order Executed!`);
         }
 
         function closePosition() {
@@ -547,9 +629,9 @@
             document.getElementById('loading-screen').style.display = 'none';
             document.getElementById('packages-screen').style.display = 'none';
             document.getElementById('trading-screen').style.display = 'block';
-            initChart('BINANCE:SOLUSDT');
             generateDummyCoins();
             renderCoins();
+            selectToken(allCoins[0]);
             startLivePriceUpdates();
             start7DayTimer(new Date());
         }
@@ -562,9 +644,9 @@
                 if (data.is_paid) {
                     document.getElementById('packages-screen').style.display = 'none';
                     document.getElementById('trading-screen').style.display = 'block';
-                    initChart('BINANCE:SOLUSDT');
                     generateDummyCoins();
                     renderCoins();
+                    selectToken(allCoins[0]);
                     startLivePriceUpdates();
                     start7DayTimer(data.start_time || new Date());
                 } else {
@@ -575,24 +657,6 @@
                 document.getElementById('loading-screen').style.display = 'none';
                 document.getElementById('packages-screen').style.display = 'block';
             }
-        }
-
-        function initChart(symbol) {
-            new TradingView.widget({
-                "autosize": true,
-                "symbol": symbol,
-                "interval": "1",
-                "timezone": "Etc/UTC",
-                "theme": "dark",
-                "style": "1",
-                "locale": "en",
-                "toolbar_bg": "#0d1117",
-                "enable_publishing": false,
-                "hide_top_toolbar": true,
-                "hide_legend": true,
-                "save_image": false,
-                "container_id": "tv_chart_container"
-            });
         }
 
         async function buyChallenge(title, amount) {
@@ -636,6 +700,7 @@
             el.classList.add('active');
         }
 
+        window.addEventListener('resize', drawChart);
         checkAccess();
     </script>
 </body>

@@ -2,154 +2,271 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>MoonFund</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; }
         body {
-            background-color: #0f172a;
+            background-color: #0d1117;
             color: #ffffff;
-            font-family: Arial, sans-serif;
-            margin: 0;
-            padding: 15px;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            padding: 12px;
+        }
+        .header {
             text-align: center;
-        }
-        .container { max-width: 450px; margin: 0 auto; }
-        .card {
-            background: #1e293b;
-            border-radius: 12px;
-            padding: 15px;
             margin-bottom: 15px;
-            border: 1px solid #334155;
         }
-        .btn {
-            background: #22c55e;
-            color: white;
+        .header h2 {
+            font-size: 18px;
+            color: #38bdf8;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+        }
+        .user-tag {
+            font-size: 13px;
+            color: #94a3b8;
+            margin-top: 2px;
+        }
+        .dev-btn {
+            background: #f59e0b;
+            color: #000;
+            font-weight: bold;
+            padding: 8px;
+            border-radius: 8px;
+            margin: 10px 0 15px 0;
+            font-size: 13px;
+        }
+        .pkg-card {
+            background: #161b22;
+            border: 1px solid #30363d;
+            border-radius: 12px;
+            padding: 14px;
+            margin-bottom: 12px;
+            position: relative;
+        }
+        .pkg-title {
+            font-size: 16px;
+            font-weight: bold;
+            display: flex;
+            justify-content: space-between;
+        }
+        .pkg-price-badge {
+            background: #1f6feb;
+            color: #fff;
+            padding: 2px 8px;
+            border-radius: 12px;
+            font-size: 12px;
+        }
+        .pkg-details {
+            font-size: 12px;
+            color: #8b949e;
+            margin: 8px 0 12px 0;
+        }
+        .buy-btn {
+            background: #238636;
+            color: #fff;
             border: none;
-            padding: 12px 20px;
             width: 100%;
+            padding: 10px;
             border-radius: 8px;
             font-weight: bold;
+            font-size: 14px;
             cursor: pointer;
-            font-size: 16px;
         }
-        .timer-box {
-            background: #eab308;
-            color: #000;
-            padding: 8px;
-            border-radius: 6px;
+        .timer-banner {
+            background: #d97706;
+            color: #fff;
+            padding: 10px;
+            border-radius: 8px;
             font-weight: bold;
-            margin-bottom: 15px;
+            font-size: 13px;
+            margin-bottom: 12px;
+            text-align: center;
         }
-        #trading-screen, #packages-screen, #loading-screen { display: none; }
+        /* Dashboard Stats */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 6px;
+            background: #161b22;
+            padding: 10px;
+            border-radius: 8px;
+            font-size: 11px;
+            margin-bottom: 12px;
+            text-align: center;
+        }
+        .stat-val { font-weight: bold; color: #38bdf8; margin-top: 3px; }
+        .trade-btns { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .btn-long { background: #238636; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; }
+        .btn-short { background: #da3633; color: white; padding: 12px; border: none; border-radius: 8px; font-weight: bold; }
+
+        #loading-screen, #packages-screen, #trading-screen { display: none; }
     </style>
 </head>
 <body>
 
-<div class="container">
+    <!-- Header Section -->
+    <div class="header">
+        <h2>🚀 MoonFund Evaluation</h2>
+        <div class="user-tag" id="user-display">@User</div>
+    </div>
+
     <!-- Loading Screen -->
-    <div id="loading-screen" style="display: block;">
-        <h2>Loading MoonFund...</h2>
+    <div id="loading-screen" style="display: block; text-align: center; padding: 40px 0;">
+        <p style="color: #94a3b8;">Loading MoonFund Account...</p>
     </div>
 
-    <!-- Packages Screen (UNPAID USERS) -->
+    <!-- PACKAGES SCREEN (UNPAID USERS) -->
     <div id="packages-screen">
-        <h2>🚀 Select Evaluation Package</h2>
-        <div class="card">
-            <h3>Micro Mooner ($1,000)</h3>
-            <p>Target: $100 (10%) | Max Loss: $50 (5%)</p>
-            <p>Duration: 7 Days</p>
-            <button class="btn" onclick="buyPackage('Micro Mooner', 15)">Buy $1,000 Challenge ($15)</button>
+        <div class="dev-btn">⚡ Test Bypass (Dev Only)</div>
+
+        <!-- Pkg 1 -->
+        <div class="pkg-card">
+            <div class="pkg-title">
+                Micro Mooner ($1,000)
+                <span class="pkg-price-badge">$15</span>
+            </div>
+            <div class="pkg-details">• Target: $100 (10%) | Max Loss: 5% ($950 Stop)</div>
+            <button class="buy-btn" onclick="buyChallenge('Micro Mooner', 15)">Buy $1,000 Challenge ($15)</button>
         </div>
-        <div class="card">
-            <h3>Mini Trader ($2,500)</h3>
-            <p>Target: $250 (10%) | Max Loss: $125 (5%)</p>
-            <p>Duration: 7 Days</p>
-            <button class="btn" onclick="buyPackage('Mini Trader', 35)">Buy $2,500 Challenge ($35)</button>
+
+        <!-- Pkg 2 -->
+        <div class="pkg-card">
+            <div class="pkg-title">
+                Mini Trader ($2,500)
+                <span class="pkg-price-badge">$35</span>
+            </div>
+            <div class="pkg-details">• Target: $250 (10%) | Max Loss: 5% ($2,375 Stop)</div>
+            <button class="buy-btn" onclick="buyChallenge('Mini Trader', 35)">Buy $2,500 Challenge ($35)</button>
+        </div>
+
+        <!-- Pkg 3 -->
+        <div class="pkg-card">
+            <div class="pkg-title">
+                Whale Scalper ($10,000)
+                <span class="pkg-price-badge">$120</span>
+            </div>
+            <div class="pkg-details">• Target: $1,000 (10%) | Max Loss: 5% ($9,500 Stop)</div>
+            <button class="buy-btn" onclick="buyChallenge('Whale Scalper', 120)">Buy $10,000 Challenge ($120)</button>
+        </div>
+
+        <!-- Pkg 4 -->
+        <div class="pkg-card">
+            <div class="pkg-title">
+                Moon Apex ($25,000)
+                <span class="pkg-price-badge">$250</span>
+            </div>
+            <div class="pkg-details">• Target: $2,500 (10%) | Max Loss: 5% ($23,750 Stop)</div>
+            <button class="buy-btn" onclick="buyChallenge('Moon Apex', 250)">Buy $25,000 Challenge ($250)</button>
         </div>
     </div>
 
-    <!-- Trading Screen (PAID USERS) -->
+    <!-- TRADING SCREEN (PAID USERS) -->
     <div id="trading-screen">
-        <div class="timer-box" id="challenge-timer">Time Remaining: 7d 00h 00m</div>
-        <h2>📈 Trading Terminal</h2>
-        <div class="card">
-            <p>Equity: <strong id="equity">$1000.00</strong></p>
-            <p>Target: <strong>$1100.00</strong></p>
-            <p>Hard Stop: <strong>$950.00</strong></p>
+        <div class="timer-banner" id="challenge-timer">⏱ Time Remaining: 7d 00h 00m</div>
+
+        <div class="stats-grid">
+            <div>EQUITY<div class="stat-val" id="equity-val">$1000.00</div></div>
+            <div>HARD STOP<div class="stat-val" style="color:#ef4444;">$950.00</div></div>
+            <div>TARGET<div class="stat-val" style="color:#22c55e;">$1100.00</div></div>
         </div>
-        <button class="btn" style="background:#ef4444; margin-bottom:10px;">SELL (SHORT)</button>
-        <button class="btn">BUY (LONG)</button>
+
+        <div style="background:#161b22; padding:15px; border-radius:8px; border:1px solid #30363d; text-align:center; color:#8b949e; font-size:12px; margin-bottom:15px;">
+            Ready to Open Position<br>
+            <strong style="color:#fff; font-size:14px;">Floating PnL: $0.00</strong>
+        </div>
+
+        <div class="trade-btns">
+            <button class="btn-long">BUY (LONG)</button>
+            <button class="btn-short">SELL (SHORT)</button>
+        </div>
     </div>
-</div>
 
-<script>
-    const tg = window.Telegram.WebApp;
-    tg.expand();
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.expand();
 
-    const BACKEND_URL = "https://moonfund-bot-production.up.railway.app"; 
-    const userId = tg.initDataUnsafe?.user?.id || "123456789"; // Testing fallback
+        const BACKEND_URL = "https://moonfund-bot-production.up.railway.app";
+        
+        // Fetch User Info
+        const user = tg.initDataUnsafe?.user;
+        const userId = user?.id || "123456789";
+        const username = user?.username ? `@${user.username}` : (user?.first_name || "@Trader");
+        
+        // Set Header Username
+        document.getElementById('user-display').innerText = username;
 
-    async function checkAccess() {
-        try {
-            const res = await fetch(`${BACKEND_URL}/api/user-status?user_id=${userId}`);
-            const data = await res.json();
+        // Check Access on Open
+        async function checkAccess() {
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/user-status?user_id=${userId}`);
+                const data = await res.json();
 
-            document.getElementById('loading-screen').style.display = 'none';
+                document.getElementById('loading-screen').style.display = 'none';
 
-            if (data.is_paid) {
-                document.getElementById('trading-screen').style.display = 'block';
-                startTimer(data.start_time);
-            } else {
+                if (data.is_paid) {
+                    document.getElementById('packages-screen').style.display = 'none';
+                    document.getElementById('trading-screen').style.display = 'block';
+                    start7DayTimer(data.start_time || new Date());
+                } else {
+                    document.getElementById('packages-screen').style.display = 'block';
+                    document.getElementById('trading-screen').style.display = 'none';
+                }
+            } catch (e) {
+                console.error("Access Check Error:", e);
+                // Fallback to packages view if network error
+                document.getElementById('loading-screen').style.display = 'none';
                 document.getElementById('packages-screen').style.display = 'block';
             }
-        } catch (e) {
-            console.error("Access Check Error:", e);
-            document.getElementById('loading-screen').style.display = 'none';
-            document.getElementById('packages-screen').style.display = 'block';
         }
-    }
 
-    async function buyPackage(title, amount) {
-        try {
-            const res = await fetch(`${BACKEND_URL}/api/create-invoice`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ amount: amount, title: title, user_id: userId })
-            });
-            const data = await res.json();
-            if (data.ok && data.result?.pay_url) {
-                tg.openTelegramLink(data.result.pay_url);
-            } else {
-                alert("Failed to create invoice");
+        // Buy Challenge Function
+        async function buyChallenge(title, amount) {
+            try {
+                const res = await fetch(`${BACKEND_URL}/api/create-invoice`, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ amount: amount, title: title, user_id: userId })
+                });
+                const data = await res.json();
+                if (data.ok && data.result?.pay_url) {
+                    tg.openTelegramLink(data.result.pay_url);
+                } else {
+                    alert("Invoice Generation Failed");
+                }
+            } catch (e) {
+                alert("Payment Server Connection Error");
             }
-        } catch (e) {
-            alert("Error connecting to payment gateway");
         }
-    }
 
-    function startTimer(startTime) {
-        const duration = 7 * 24 * 60 * 60 * 1000; // 7 Days
-        const expiry = new Date(startTime).getTime() + duration;
+        // 7-Day Timer Logic
+        function start7DayTimer(startTime) {
+            const duration = 7 * 24 * 60 * 60 * 1000; // 7 days in ms
+            const expiry = new Date(startTime).getTime() + duration;
 
-        setInterval(() => {
-            const now = new Date().getTime();
-            const diff = expiry - now;
+            setInterval(() => {
+                const now = new Date().getTime();
+                const diff = expiry - now;
 
-            if (diff <= 0) {
-                document.getElementById('challenge-timer').innerText = "EXPIRED / FAILED";
-                return;
-            }
+                if (diff <= 0) {
+                    document.getElementById('challenge-timer').innerText = "❌ CHALLENGE EXPIRED / FAILED";
+                    document.getElementById('challenge-timer').style.background = "#dc2626";
+                    return;
+                }
 
-            const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-            const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-            const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-            
-            document.getElementById('challenge-timer').innerText = `Time Remaining: ${days}d ${hours}h ${mins}m`;
-        }, 1000);
-    }
+                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+                const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
 
-    checkAccess();
-</script>
+                document.getElementById('challenge-timer').innerText = `⏱ Time Remaining: ${days}d ${hours}h ${mins}m`;
+            }, 1000);
+        }
+
+        // Initialize App
+        checkAccess();
+    </script>
 </body>
 </html>

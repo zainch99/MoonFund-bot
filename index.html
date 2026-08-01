@@ -3,705 +3,319 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MoonFund Terminal</title>
+    <title>MoonFund Evaluation Terminal</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; user-select: none; }
+        * { box-sizing: border-box; }
         body {
-            background-color: #0d1117;
-            color: #ffffff;
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            padding: 8px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #0b0f19;
+            color: #f8fafc;
+            margin: 0;
+            padding: 6px;
+            user-select: none;
         }
         .header { text-align: center; margin-bottom: 6px; }
-        .header h2 { font-size: 16px; color: #38bdf8; }
-        .user-tag { font-size: 11px; color: #94a3b8; }
-        
-        .dev-btn {
-            background: #f59e0b;
-            color: #000;
-            font-weight: bold;
-            padding: 10px;
-            border-radius: 8px;
-            margin: 8px 0 12px 0;
-            font-size: 13px;
-            text-align: center;
-            cursor: pointer;
-        }
-        .pkg-card {
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 10px;
-            padding: 12px;
-            margin-bottom: 10px;
-        }
-        .pkg-title {
-            font-size: 14px;
-            font-weight: bold;
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 8px;
-        }
-        .pkg-price-badge { background: #1f6feb; color: #fff; padding: 2px 6px; border-radius: 10px; font-size: 11px; }
-        .buy-btn {
-            background: #238636;
-            color: #fff;
-            border: none;
-            width: 100%;
-            padding: 8px;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 13px;
-            cursor: pointer;
-        }
-
-        .timer-banner {
-            background: #d97706;
-            color: #fff;
-            padding: 6px;
-            border-radius: 6px;
-            font-weight: bold;
-            font-size: 11px;
-            margin-bottom: 6px;
-            text-align: center;
-        }
-        .stats-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 4px;
-            background: #161b22;
-            padding: 6px;
-            border-radius: 6px;
-            font-size: 9px;
-            margin-bottom: 6px;
-            text-align: center;
-            border: 1px solid #30363d;
-        }
-        .stat-val { font-weight: bold; font-size: 11px; margin-top: 2px; }
-
-        .pnl-box {
-            background: #161b22;
-            padding: 8px 10px;
-            border-radius: 6px;
-            border: 1px solid #30363d;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            color: #8b949e;
-            font-size: 11px;
-            margin-bottom: 8px;
-        }
-
-        .chart-card {
-            background: #161b22;
-            border: 1px solid #30363d;
-            border-radius: 8px;
-            padding: 8px;
-            margin-bottom: 8px;
-        }
-        .chart-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-bottom: 6px;
-        }
-        .chart-symbol { font-size: 13px; font-weight: bold; color: #38bdf8; }
-        .chart-price { font-size: 13px; font-weight: bold; color: #22c55e; }
-        canvas {
-            width: 100%;
-            height: 180px;
-            background: #0d1117;
-            border-radius: 4px;
-        }
-
-        .order-panel {
-            background: #161b22;
-            border: 1px solid #30363d;
-            padding: 8px;
-            border-radius: 8px;
-            margin-bottom: 8px;
-        }
-        .amount-selector {
-            display: flex;
-            gap: 6px;
-            margin-bottom: 8px;
-        }
-        .amt-btn {
-            flex: 1;
-            background: #0d1117;
-            border: 1px solid #30363d;
+        .header h1 { color: #38bdf8; font-size: 16px; margin: 0; }
+        .user-greeting {
+            background: rgba(56, 189, 248, 0.1);
             color: #38bdf8;
-            padding: 6px;
-            border-radius: 4px;
+            padding: 2px 8px;
+            border-radius: 6px;
             font-size: 11px;
+            font-weight: 600;
+            display: inline-block;
+            margin-top: 2px;
+        }
+        .test-bypass-btn {
+            background-color: #f59e0b;
+            color: #000;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 13px;
             font-weight: bold;
             cursor: pointer;
-            text-align: center;
-        }
-        .amt-btn.active {
-            background: #1f6feb;
-            color: white;
-            border-color: #1f6feb;
-        }
-        .custom-amt-input {
             width: 100%;
-            background: #0d1117;
-            border: 1px solid #30363d;
-            color: #fff;
-            padding: 6px;
-            border-radius: 4px;
-            font-size: 11px;
-            text-align: center;
+            margin-bottom: 12px;
+        }
+        .card {
+            background: #151c2c;
+            border: 1px solid #243049;
+            border-radius: 8px;
+            padding: 8px;
             margin-bottom: 8px;
-            outline: none;
         }
+        .card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+        .card-title { font-size: 14px; font-weight: bold; color: #f8fafc; }
+        .card-price { background: #0284c7; color: #fff; padding: 2px 8px; border-radius: 12px; font-size: 11px; font-weight: bold; }
+        .rules { font-size: 11px; color: #94a3b8; line-height: 1.4; margin-bottom: 8px; }
+        .rules span { color: #e2e8f0; font-weight: 600; }
+        .btn { background-color: #10b981; color: #000; border: none; padding: 10px; border-radius: 6px; font-size: 13px; font-weight: bold; cursor: pointer; width: 100%; }
 
-        .trade-btns {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 8px;
-        }
-        .btn-long { background: #238636; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; }
-        .btn-short { background: #da3633; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; }
-        .btn-close { background: #d97706; color: white; padding: 10px; border: none; border-radius: 6px; font-weight: bold; font-size: 13px; cursor: pointer; width: 100%; display: none; margin-top: 6px; }
-
-        .dex-tabs { display: flex; gap: 6px; margin-bottom: 8px; }
-        .dex-tab {
-            background: #161b22;
-            padding: 6px 10px;
+        /* COMPACT LIVE STATS HEADER */
+        .compact-stats-bar {
+            background: #151c2c;
+            border: 1px solid #243049;
             border-radius: 6px;
-            border: 1px solid #30363d;
-            color: #8b949e;
-            font-size: 11px;
-            cursor: pointer;
-        }
-        .dex-tab.active { background: #1f6feb; color: white; border-color: #1f6feb; }
-
-        .hall-banner {
-            background: #161b22;
-            border: 1px solid #30363d;
-            padding: 6px 10px;
-            border-radius: 6px;
-            font-size: 11px;
-            color: #f59e0b;
+            padding: 6px 8px;
             display: flex;
             justify-content: space-between;
             align-items: center;
-            margin-bottom: 8px;
-        }
-
-        .analytics-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr 1fr;
-            gap: 4px;
-            background: #161b22;
-            padding: 6px;
-            border-radius: 6px;
-            border: 1px solid #30363d;
-            font-size: 8px;
-            color: #8b949e;
-            margin-bottom: 8px;
-            text-align: center;
-        }
-        .analytics-val { color: #38bdf8; font-weight: bold; font-size: 10px; margin-top: 1px; }
-
-        .filter-bar { display: flex; gap: 6px; margin-bottom: 8px; }
-        .filter-item {
-            background: #161b22;
-            padding: 4px 8px;
-            border-radius: 4px;
-            border: 1px solid #30363d;
-            color: #8b949e;
-            font-size: 10px;
-            cursor: pointer;
-        }
-        .filter-item.active { background: #238636; color: white; border-color: #238636; }
-
-        .table-header {
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr;
-            font-size: 9px;
-            color: #8b949e;
-            padding: 4px 6px;
-            border-bottom: 1px solid #30363d;
+            font-size: 11px;
             margin-bottom: 4px;
         }
-        .token-list {
-            display: flex;
-            flex-direction: column;
-            gap: 6px;
-            margin-bottom: 20px;
-            max-height: 300px;
-            overflow-y: auto;
-        }
-        .token-item {
-            background: #161b22;
-            border: 1px solid #30363d;
-            padding: 8px 10px;
-            border-radius: 6px;
-            display: grid;
-            grid-template-columns: 2fr 1fr 1fr;
-            align-items: center;
+        .stat-item { display: flex; flex-direction: column; text-align: center; }
+        .stat-lbl { font-size: 9px; color: #94a3b8; text-transform: uppercase; }
+        .stat-val { font-weight: bold; color: #38bdf8; font-size: 12px; margin-top: 1px; transition: color 0.2s; }
+
+        .reload-chart-btn {
+            background: #38bdf8;
+            color: #000;
+            border: none;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 10px;
+            font-weight: bold;
             cursor: pointer;
         }
-        .token-item.selected {
-            border-color: #38bdf8;
-            background: #1f2937;
-        }
-        .token-symbol { font-weight: bold; font-size: 11px; color: #fff; }
-        .token-sub { font-size: 8px; color: #8b949e; }
-        .mcap-val { font-size: 10px; font-weight: bold; color: #22c55e; }
-        .price-val { font-size: 10px; font-weight: bold; color: #fff; text-align: right; }
 
-        #toast-bar {
-            position: fixed;
-            bottom: 10px;
-            left: 50%;
-            transform: translateX(-50%);
-            background: #1f6feb;
-            color: #fff;
-            padding: 6px 16px;
-            border-radius: 20px;
+        /* TRADE STATUS BANNER */
+        .trade-status-banner {
+            text-align: center;
             font-size: 11px;
             font-weight: bold;
-            display: none;
-            z-index: 9999;
+            padding: 6px;
+            border-radius: 4px;
+            margin-bottom: 6px;
+            background: #1e293b;
+            color: #38bdf8;
         }
 
-        #loading-screen { display: block; }
-        #packages-screen { display: none; }
-        #trading-screen { display: none; }
+        /* DEX CONTAINER */
+        .dex-frame-container {
+            width: 100%;
+            height: calc(100vh - 165px);
+            min-height: 380px;
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            border: 1px solid #243049;
+            margin-bottom: 6px;
+            position: relative;
+        }
+        iframe {
+            width: 100%;
+            height: calc(100% + 38px);
+            border: none;
+        }
+
+        .trade-grid { 
+            display: grid; 
+            grid-template-columns: 1fr 1fr; 
+            gap: 6px; 
+        }
+        .action-btn { 
+            border: none; 
+            padding: 14px; 
+            border-radius: 6px; 
+            font-weight: bold; 
+            cursor: pointer; 
+            font-size: 14px; 
+            width: 100%;
+        }
+        .buy-style { background: #10b981; color: #000; }
+        .sell-style { background: #ef4444; color: #fff; }
+        .reset-btn { background: #f59e0b; color: #000; margin-top: 6px; display: none; }
     </style>
 </head>
 <body>
 
-    <div class="header">
-        <h2>🚀 MoonFund Evaluation</h2>
-        <div class="user-tag" id="user-display">@Trader</div>
-    </div>
-
-    <!-- LOADING SCREEN -->
-    <div id="loading-screen" style="text-align: center; padding: 40px 0;">
-        <p style="color: #94a3b8;">Loading MoonFund Account...</p>
-    </div>
-
-    <!-- PACKAGES SCREEN -->
-    <div id="packages-screen">
-        <div class="dev-btn" onclick="bypassPayment()">⚡ Test Bypass (Dev Only)</div>
-
-        <div class="pkg-card">
-            <div class="pkg-title">Micro Mooner ($1,000)<span class="pkg-price-badge">$15</span></div>
-            <button class="buy-btn" onclick="buyChallenge('Micro Mooner', 15)">Buy $1,000 Challenge ($15)</button>
-        </div>
-        <div class="pkg-card">
-            <div class="pkg-title">Mini Trader ($2,500)<span class="pkg-price-badge">$35</span></div>
-            <button class="buy-btn" onclick="buyChallenge('Mini Trader', 35)">Buy $2,500 Challenge ($35)</button>
-        </div>
-        <div class="pkg-card">
-            <div class="pkg-title">Pro Scalper ($5,000)<span class="pkg-price-badge">$65</span></div>
-            <button class="buy-btn" onclick="buyChallenge('Pro Scalper', 65)">Buy $5,000 Challenge ($65)</button>
-        </div>
-        <div class="pkg-card">
-            <div class="pkg-title">Whale Scalper ($10,000)<span class="pkg-price-badge">$120</span></div>
-            <button class="buy-btn" onclick="buyChallenge('Whale Scalper', 120)">Buy $10,000 Challenge ($120)</button>
-        </div>
-        <div class="pkg-card">
-            <div class="pkg-title">Moon Apex ($25,000)<span class="pkg-price-badge">$250</span></div>
-            <button class="buy-btn" onclick="buyChallenge('Moon Apex', 250)">Buy $25,000 Challenge ($250)</button>
-        </div>
-    </div>
-
-    <!-- TRADING TERMINAL SCREEN -->
-    <div id="trading-screen">
-        <div class="timer-banner" id="challenge-timer">⏱ Time Remaining: 7d 00h 00m</div>
-
-        <div class="stats-grid">
-            <div>EQUITY<div class="stat-val" style="color:#38bdf8;" id="equity-val">$1000.00</div></div>
-            <div>HARD STOP<div class="stat-val" style="color:#ef4444;">$950.00</div></div>
-            <div>TARGET<div class="stat-val" style="color:#22c55e;">$1100.00</div></div>
+    <!-- SECTION 1: PACKAGES LANDING -->
+    <div id="landing-view">
+        <div class="header">
+            <h1>🚀 MoonFund Evaluation</h1>
+            <div class="user-greeting" id="user-greeting">Trader</div>
         </div>
 
-        <div class="pnl-box">
-            <span id="pos-info">Pos: <strong>NONE</strong></span>
-            <span style="color: #fff;">Floating PnL: <strong style="color:#38bdf8;" id="floating-pnl">$0.00</strong></span>
-        </div>
+        <button class="test-bypass-btn" onclick="launchDashboard(1000)">⚡ Test Bypass (Activate Terminal)</button>
 
-        <!-- DYNAMIC CANVAS CHART -->
-        <div class="chart-card">
-            <div class="chart-header">
-                <span class="chart-symbol" id="chart-title">MOON/SOL</span>
-                <span class="chart-price" id="chart-live-price">$0.001200</span>
+        <div class="card">
+            <div class="card-header">
+                <span class="card-title">Micro Mooner ($1,000)</span>
+                <span class="card-price">$15</span>
             </div>
-            <canvas id="cryptoCanvas"></canvas>
-        </div>
-
-        <!-- ORDER CONTROL PANEL -->
-        <div class="order-panel">
-            <div style="font-size: 9px; color: #8b949e; margin-bottom: 4px;">ORDER AMOUNT ($USD):</div>
-            <div class="amount-selector">
-                <div class="amt-btn active" onclick="setAmount(10, this)">$10</div>
-                <div class="amt-btn" onclick="setAmount(50, this)">$50</div>
-                <div class="amt-btn" onclick="setAmount(100, this)">$100</div>
-                <div class="amt-btn" onclick="setAmount(200, this)">$200</div>
+            <div class="rules">
+                • Target: <span>$100 (10%)</span> | Max Loss: <span>5% ($950 Stop)</span><br>
+                • Rules: <span>Realistic Trend Engine</span>
             </div>
-            <input type="number" id="trade-amount" class="custom-amt-input" value="10" placeholder="Enter Custom Amount">
-
-            <div class="trade-btns" id="action-btns">
-                <button class="btn-long" onclick="executeTrade('BUY')">BUY (LONG)</button>
-                <button class="btn-short" onclick="executeTrade('SELL')">SELL (SHORT)</button>
-            </div>
-            <button class="btn-close" id="close-btn" onclick="closePosition()">CLOSE POSITION</button>
+            <button class="btn" onclick="launchDashboard(1000)">Buy $1,000 Challenge</button>
         </div>
-
-        <!-- DEX TABS -->
-        <div class="dex-tabs">
-            <div class="dex-tab active" onclick="switchDexTab(this, 'all')">All DEXes</div>
-            <div class="dex-tab" onclick="switchDexTab(this, 'pumpswap')">💊 PumpSwap</div>
-            <div class="dex-tab" onclick="switchDexTab(this, 'orca')">Orca</div>
-        </div>
-
-        <!-- METAS -->
-        <div class="hall-banner">
-            <span>🔥 Metas</span>
-            <span style="color:#f59e0b; font-weight:bold;">🏆 Meme Hall of Fame $1.32B</span>
-        </div>
-
-        <!-- ANALYTICS -->
-        <div class="analytics-grid">
-            <div>24H VOLUME<div class="analytics-val">$5.87B</div></div>
-            <div>24H TXNS<div class="analytics-val">22,237,938</div></div>
-            <div>BLOCK<div class="analytics-val">0s ago</div></div>
-        </div>
-
-        <!-- FILTERS -->
-        <div class="filter-bar">
-            <div class="filter-item" onclick="switchFilter(this)">24H</div>
-            <div class="filter-item active" onclick="switchFilter(this)">🔥 Trending</div>
-            <div class="filter-item" onclick="switchFilter(this)">5M</div>
-            <div class="filter-item" onclick="switchFilter(this)">1H</div>
-            <div class="filter-item" onclick="switchFilter(this)">1D</div>
-        </div>
-
-        <div class="table-header">
-            <div>TOKEN</div>
-            <div>MCAP</div>
-            <div style="text-align: right;">PRICE</div>
-        </div>
-
-        <div class="token-list" id="token-feed-list"></div>
     </div>
 
-    <div id="toast-bar">Trade Executed</div>
+    <!-- SECTION 2: TERMINAL -->
+    <div id="dashboard-view" style="display:none;">
+        
+        <div class="compact-stats-bar">
+            <button class="reload-chart-btn" onclick="resetDexList()">← Tokens</button>
+            <div class="stat-item">
+                <span class="stat-lbl">Equity</span>
+                <span class="stat-val" id="val-equity">$1,000.00</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-lbl">Hard Stop</span>
+                <span class="stat-val" id="val-stop" style="color: #ef4444;">$950.00</span>
+            </div>
+            <div class="stat-item">
+                <span class="stat-lbl">Target</span>
+                <span class="stat-val" id="val-target" style="color: #10b981;">$1,100.00</span>
+            </div>
+        </div>
+
+        <div class="trade-status-banner" id="status-banner">Ready to Trade</div>
+
+        <div class="dex-frame-container">
+            <iframe id="dex-iframe" src="https://dexscreener.com/solana?embed=1&theme=dark&trades=0&info=0"></iframe>
+        </div>
+
+        <div class="trade-grid">
+            <button class="action-btn buy-style" id="btn-buy" onclick="processTrade('BUY')">BUY (LONG)</button>
+            <button class="action-btn sell-style" id="btn-sell" onclick="processTrade('SELL')">SELL (SHORT)</button>
+        </div>
+        <button class="action-btn reset-btn" id="btn-reset-session" onclick="forceResetSession()">🔄 Reset Test Account</button>
+    </div>
 
     <script>
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+        const tg = window.Telegram?.WebApp;
+        if (tg) tg.expand();
 
-        const BACKEND_URL = "https://moonfund-bot-production.up.railway.app";
-        const user = tg.initDataUnsafe?.user;
-        const userId = user?.id || "123456789";
-        const username = user?.username ? `@${user.username}` : (user?.first_name || "@Trader");
-        
-        document.getElementById('user-display').innerText = username;
+        let account = { 
+            initialBalance: 1000, 
+            equity: 1000, 
+            target: 1100, 
+            hardStop: 950, 
+            status: "ACTIVE",
+            currentTrend: 1
+        };
 
-        let accountEquity = 1000.00;
-        let activePosition = null; 
-        let selectedCoin = null;
-
-        const prefixes = ["MOON", "PUMP", "SOL", "PEPE", "DOGE", "CAT", "ELON", "NEO", "APE", "SHIB"];
-        const suffixes = ["AI", "INU", "X", "SWAP", "COIN", "DAO", "PRO", "LABS", "FINANCE", "BOY"];
-        
-        let allCoins = [];
-        let currentDexFilter = 'all';
-
-        function showToast(msg) {
-            const toast = document.getElementById('toast-bar');
-            toast.innerText = msg;
-            toast.style.display = 'block';
-            setTimeout(() => { toast.style.display = 'none'; }, 2000);
-        }
-
-        function setAmount(amt, el) {
-            document.querySelectorAll('.amt-btn').forEach(b => b.classList.remove('active'));
-            if(el) el.classList.add('active');
-            document.getElementById('trade-amount').value = amt;
-        }
-
-        function generateDummyCoins() {
-            allCoins = [];
-            for (let i = 1; i <= 30; i++) {
-                const p = prefixes[Math.floor(Math.random() * prefixes.length)];
-                const s = suffixes[Math.floor(Math.random() * suffixes.length)];
-                const dex = (i % 2 === 0) ? 'pumpswap' : 'orca';
-                const basePrice = Math.random() * 0.005 + 0.0005;
-                
-                let history = [];
-                let current = basePrice;
-                for (let j = 0; j < 30; j++) {
-                    let open = current;
-                    let close = open * (1 + (Math.random() - 0.49) * 0.08);
-                    let high = Math.max(open, close) * (1 + Math.random() * 0.02);
-                    let low = Math.min(open, close) * (1 - Math.random() * 0.02);
-                    history.push({ open, high, low, close });
-                    current = close;
-                }
-
-                allCoins.push({
-                    id: i,
-                    symbol: `${p}${s}`,
-                    dex: dex,
-                    mcap: (Math.random() * 500 + 10).toFixed(1),
-                    price: current,
-                    vol: (Math.random() * 50 + 1).toFixed(1),
-                    candles: history
-                });
-            }
-            selectedCoin = allCoins[0];
-        }
-
-        function selectToken(coin) {
-            selectedCoin = coin;
-            document.getElementById('chart-title').innerText = `${coin.symbol} / SOL`;
-            document.getElementById('chart-live-price').innerText = `$${coin.price.toFixed(6)}`;
-            
-            renderCoins();
-            drawChart();
-            showToast(`Loaded: ${coin.symbol}`);
-        }
-
-        function renderCoins() {
-            const container = document.getElementById('token-feed-list');
-            container.innerHTML = '';
-
-            const filtered = allCoins.filter(c => currentDexFilter === 'all' || c.dex === currentDexFilter);
-
-            filtered.forEach(coin => {
-                const item = document.createElement('div');
-                item.className = `token-item ${selectedCoin && selectedCoin.id === coin.id ? 'selected' : ''}`;
-                item.onclick = () => selectToken(coin);
-                item.innerHTML = `
-                    <div>
-                        <div class="token-symbol">${coin.dex === 'pumpswap' ? '💊' : '⚡'} ${coin.symbol} / SOL</div>
-                        <div class="token-sub">24H VOL: $${coin.vol}M</div>
-                    </div>
-                    <div class="mcap-val">$${coin.mcap}K</div>
-                    <div class="price-val" id="price-${coin.id}">$${coin.price.toFixed(6)}</div>
-                `;
-                container.appendChild(item);
-            });
-        }
-
-        function drawChart() {
-            if (!selectedCoin) return;
-            const canvas = document.getElementById('cryptoCanvas');
-            const ctx = canvas.getContext('2d');
-
-            canvas.width = canvas.parentElement.clientWidth - 16;
-            canvas.height = 180;
-
-            const w = canvas.width;
-            const h = canvas.height;
-            ctx.clearRect(0, 0, w, h);
-
-            const candles = selectedCoin.candles;
-            let minP = Math.min(...candles.map(c => c.low));
-            let maxP = Math.max(...candles.map(c => c.high));
-            
-            const padding = (maxP - minP) * 0.1 || 0.00001;
-            minP -= padding;
-            maxP += padding;
-
-            const candleWidth = (w - 20) / candles.length;
-
-            candles.forEach((c, idx) => {
-                const x = 10 + idx * candleWidth + candleWidth / 2;
-                const isGreen = c.close >= c.open;
-
-                const yHigh = h - ((c.high - minP) / (maxP - minP)) * h;
-                const yLow = h - ((c.low - minP) / (maxP - minP)) * h;
-                const yOpen = h - ((c.open - minP) / (maxP - minP)) * h;
-                const yClose = h - ((c.close - minP) / (maxP - minP)) * h;
-
-                ctx.strokeStyle = isGreen ? '#22c55e' : '#ef4444';
-                ctx.lineWidth = 1;
-                ctx.beginPath();
-                ctx.moveTo(x, yHigh);
-                ctx.lineTo(x, yLow);
-                ctx.stroke();
-
-                ctx.fillStyle = isGreen ? '#22c55e' : '#ef4444';
-                const bodyY = Math.min(yOpen, yClose);
-                const bodyH = Math.max(Math.abs(yOpen - yClose), 2);
-                ctx.fillRect(x - candleWidth * 0.35, bodyY, candleWidth * 0.7, bodyH);
-            });
-        }
-
-        function startLivePriceUpdates() {
-            setInterval(() => {
-                allCoins.forEach(coin => {
-                    const delta = (Math.random() - 0.49) * 0.04; 
-                    let lastCandle = coin.candles[coin.candles.length - 1];
-                    let newClose = Math.max(0.000001, lastCandle.close * (1 + delta));
-                    
-                    lastCandle.close = newClose;
-                    lastCandle.high = Math.max(lastCandle.high, newClose);
-                    lastCandle.low = Math.min(lastCandle.low, newClose);
-                    coin.price = newClose;
-
-                    const priceEl = document.getElementById(`price-${coin.id}`);
-                    if (priceEl) {
-                        priceEl.innerText = `$${coin.price.toFixed(6)}`;
-                        priceEl.style.color = delta >= 0 ? '#22c55e' : '#ef4444';
-                    }
-                });
-
-                if (selectedCoin) {
-                    document.getElementById('chart-live-price').innerText = `$${selectedCoin.price.toFixed(6)}`;
-                    drawChart();
-                }
-
-                if (activePosition && activePosition.symbol === selectedCoin.symbol) {
-                    const priceDiff = (selectedCoin.price - activePosition.entryPrice) / activePosition.entryPrice;
-                    let pnl = activePosition.type === 'BUY' ? activePosition.amount * priceDiff : activePosition.amount * (-priceDiff);
-                    activePosition.currentPnL = pnl;
-
-                    const pnlEl = document.getElementById('floating-pnl');
-                    pnlEl.innerText = `${pnl >= 0 ? '+' : ''}$${pnl.toFixed(2)}`;
-                    pnlEl.style.color = pnl >= 0 ? '#22c55e' : '#ef4444';
-                }
-            }, 1200);
-        }
-
-        function executeTrade(type) {
-            if (activePosition) {
-                showToast("Close existing position first!");
-                return;
+        window.onload = function() {
+            if (tg && tg.initDataUnsafe?.user) {
+                const u = tg.initDataUnsafe.user;
+                document.getElementById('user-greeting').innerText = `@${u.username || u.first_name}`;
             }
 
-            const amt = parseFloat(document.getElementById('trade-amount').value);
-            if (isNaN(amt) || amt <= 0 || amt > 200) {
-                showToast("Max Trade Amount is $200!");
-                return;
+            const savedSession = localStorage.getItem('moonfund_active_session');
+            if (savedSession) {
+                try {
+                    account = JSON.parse(savedSession);
+                    showDashboardUI();
+                } catch(e) {
+                    forceResetSession();
+                }
             }
+        };
 
-            activePosition = {
-                symbol: selectedCoin.symbol,
-                type: type,
-                amount: amt,
-                entryPrice: selectedCoin.price,
-                currentPnL: 0.0
+        function resetDexList() {
+            document.getElementById('dex-iframe').src = "https://dexscreener.com/solana?embed=1&theme=dark&trades=0&info=0";
+        }
+
+        function forceResetSession() {
+            localStorage.removeItem('moonfund_active_session');
+            location.reload();
+        }
+
+        function launchDashboard(creditAmount) {
+            account = {
+                initialBalance: creditAmount,
+                equity: creditAmount,
+                target: creditAmount * 1.10,
+                hardStop: creditAmount * 0.95,
+                status: "ACTIVE",
+                currentTrend: 1
             };
 
-            document.getElementById('pos-info').innerHTML = `Pos: <strong style="color:${type === 'BUY' ? '#22c55e' : '#ef4444'};">${type} $${amt} (${selectedCoin.symbol})</strong>`;
-            document.getElementById('action-btns').style.display = 'none';
-            document.getElementById('close-btn').style.display = 'block';
-
-            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('success');
-            showToast(`${type} Order Executed!`);
+            localStorage.setItem('moonfund_active_session', JSON.stringify(account));
+            showDashboardUI();
         }
 
-        function closePosition() {
-            if (!activePosition) return;
-
-            accountEquity += activePosition.currentPnL;
-            document.getElementById('equity-val').innerText = `$${accountEquity.toFixed(2)}`;
-
-            activePosition = null;
-            document.getElementById('pos-info').innerHTML = `Pos: <strong>NONE</strong>`;
-            document.getElementById('floating-pnl').innerText = `$0.00`;
-            document.getElementById('floating-pnl').style.color = `#38bdf8`;
-
-            document.getElementById('action-btns').style.display = 'grid';
-            document.getElementById('close-btn').style.display = 'none';
-
-            if (tg.HapticFeedback) tg.HapticFeedback.notificationOccurred('warning');
-            showToast("Position Closed");
+        function showDashboardUI() {
+            document.getElementById('landing-view').style.display = 'none';
+            document.getElementById('dashboard-view').style.display = 'block';
+            setupBackButton();
+            renderStats();
         }
 
-        function switchDexTab(el, dexType) {
-            document.querySelectorAll('.dex-tab').forEach(t => t.classList.remove('active'));
-            el.classList.add('active');
-            currentDexFilter = dexType;
-            renderCoins();
-        }
+        function setupBackButton() {
+            window.history.pushState({ page: 'terminal' }, '', '');
+            window.onpopstate = function () {
+                resetDexList();
+                window.history.pushState({ page: 'terminal' }, '', '');
+            };
 
-        function bypassPayment() {
-            document.getElementById('loading-screen').style.display = 'none';
-            document.getElementById('packages-screen').style.display = 'none';
-            document.getElementById('trading-screen').style.display = 'block';
-            generateDummyCoins();
-            renderCoins();
-            selectToken(allCoins[0]);
-            startLivePriceUpdates();
-            start7DayTimer(new Date());
-        }
-
-        async function checkAccess() {
-            try {
-                const res = await fetch(`${BACKEND_URL}/api/user-status?user_id=${userId}`);
-                const data = await res.json();
-                document.getElementById('loading-screen').style.display = 'none';
-                if (data.is_paid) {
-                    document.getElementById('packages-screen').style.display = 'none';
-                    document.getElementById('trading-screen').style.display = 'block';
-                    generateDummyCoins();
-                    renderCoins();
-                    selectToken(allCoins[0]);
-                    startLivePriceUpdates();
-                    start7DayTimer(data.start_time || new Date());
-                } else {
-                    document.getElementById('packages-screen').style.display = 'block';
-                    document.getElementById('trading-screen').style.display = 'none';
-                }
-            } catch (e) {
-                document.getElementById('loading-screen').style.display = 'none';
-                document.getElementById('packages-screen').style.display = 'block';
+            if (tg && tg.BackButton) {
+                tg.BackButton.show();
+                tg.BackButton.onClick(() => { resetDexList(); });
             }
         }
 
-        async function buyChallenge(title, amount) {
-            try {
-                const res = await fetch(`${BACKEND_URL}/api/create-invoice`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ amount: amount, title: title, user_id: userId })
-                });
-                const data = await res.json();
-                if (data.ok && data.result?.pay_url) {
-                    tg.openTelegramLink(data.result.pay_url);
-                } else {
-                    showToast("Payment Failed");
-                }
-            } catch (e) {
-                showToast("Server Error");
+        function renderStats(pnl = null, type = '') {
+            const equityEl = document.getElementById('val-equity');
+            equityEl.innerText = `$${account.equity.toFixed(2)}`;
+            document.getElementById('val-stop').innerText = `$${account.hardStop.toFixed(2)}`;
+            document.getElementById('val-target').innerText = `$${account.target.toFixed(2)}`;
+
+            const banner = document.getElementById('status-banner');
+            const resetBtn = document.getElementById('btn-reset-session');
+
+            if (pnl !== null) {
+                const isWin = pnl >= 0;
+                banner.innerText = `${type} ORDER: ${isWin ? '+' : ''}$${pnl.toFixed(2)}`;
+                banner.style.color = isWin ? '#10b981' : '#ef4444';
+                
+                equityEl.style.color = isWin ? '#10b981' : '#ef4444';
+                setTimeout(() => { equityEl.style.color = '#38bdf8'; }, 300);
+            }
+
+            localStorage.setItem('moonfund_active_session', JSON.stringify(account));
+
+            if (account.equity <= account.hardStop) {
+                account.status = "TERMINATED";
+                banner.innerText = "🚨 MAX LOSS HIT ($950)! ACCOUNT TERMINATED.";
+                banner.style.color = "#ef4444";
+                resetBtn.style.display = "block";
+            } else if (account.equity >= account.target) {
+                account.status = "PASSED";
+                banner.innerText = "🏆 TARGET REACHED ($1100)! EVALUATION PASSED!";
+                banner.style.color = "#10b981";
+                resetBtn.style.display = "block";
+            } else {
+                resetBtn.style.display = "none";
             }
         }
 
-        function start7DayTimer(startTime) {
-            const duration = 7 * 24 * 60 * 60 * 1000;
-            const expiry = new Date(startTime).getTime() + duration;
-            setInterval(() => {
-                const now = new Date().getTime();
-                const diff = expiry - now;
-                if (diff <= 0) {
-                    document.getElementById('challenge-timer').innerText = "❌ CHALLENGE EXPIRED";
-                    document.getElementById('challenge-timer').style.background = "#dc2626";
-                    return;
-                }
-                const days = Math.floor(diff / (1000 * 60 * 60 * 24));
-                const hours = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-                const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-                document.getElementById('challenge-timer').innerText = `⏱ Time Remaining: ${days}d ${hours}h ${mins}m`;
-            }, 1000);
-        }
+        function processTrade(type) {
+            if (account.status !== "ACTIVE") {
+                forceResetSession();
+                return;
+            }
 
-        function switchFilter(el) {
-            document.querySelectorAll('.filter-item').forEach(f => f.classList.remove('active'));
-            el.classList.add('active');
-        }
+            let pnl = 0;
+            let isPositiveTrend = (type === 'BUY');
 
-        window.addEventListener('resize', drawChart);
-        checkAccess();
+            if (Math.random() < 0.25) {
+                isPositiveTrend = !isPositiveTrend;
+            }
+
+            if (isPositiveTrend) {
+                pnl = +(Math.random() * 18 + 5).toFixed(2);
+            } else {
+                pnl = -(Math.random() * 10 + 3).toFixed(2);
+            }
+
+            account.equity = +(account.equity + pnl).toFixed(2);
+            renderStats(pnl, type);
+        }
     </script>
 </body>
 </html>
